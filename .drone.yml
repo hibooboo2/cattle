@@ -4,8 +4,6 @@ script:
 notify:
   slack:
     webhook_url: 'https://hooks.slack.com/services/$$SLACK_WEBHOOK_TOKEN'
-    username: 'Cattle-Build'
-    channel: '#droneci'
     on_started: false
     on_success: true
     on_failure: true
