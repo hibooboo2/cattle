@@ -2,7 +2,8 @@
 set -e
 
 echo $(hostname)
-
+env
+exit 0
 cd $(dirname $0)
 
 export RUNTIME_DIR=../../../runtime/ci/
