@@ -1,8 +1,9 @@
 package io.cattle.platform.iaas.api.auth.integrations.github;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.interfaces.AccountLookup;
+import io.cattle.platform.iaas.api.auth.AuthUtils;
 import io.cattle.platform.iaas.api.auth.integrations.github.constants.GithubConstants;
+import io.cattle.platform.iaas.api.auth.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -22,18 +23,18 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Override
     public Account getAccount(ApiRequest request) {
-        if (StringUtils.equals(GithubConstants.TOKEN, request.getType())) {
+        if (StringUtils.equals(AuthUtils.TOKEN, request.getType())) {
             return null;
         }
         githubUtils.findAndSetJWT();
         return getAccountAccessInternal();
     }
 
-    private Account getAccountAccessInternal(){
+    private Account getAccountAccessInternal() {
         return githubUtils.getAccountFromJWT();
     }
 
-    public Account getAccountAccess(String token, ApiRequest request){
+    public Account getAccountAccess(String token, ApiRequest request) {
         request.setAttribute(GithubConstants.GITHUB_JWT, token);
         return getAccountAccessInternal();
     }

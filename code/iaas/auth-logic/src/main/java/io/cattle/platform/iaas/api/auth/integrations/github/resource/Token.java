@@ -1,18 +1,16 @@
 package io.cattle.platform.iaas.api.auth.integrations.github.resource;
 
-import io.cattle.platform.iaas.api.auth.integrations.github.constants.GithubConstants;
+import io.cattle.platform.iaas.api.auth.AuthUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
 
-@Type(name = GithubConstants.TOKEN)
+@Type(name = AuthUtils.TOKEN)
 public class Token {
 
     private final String jwt;
-    private final String hostname
-            ;
-    private String code;
+    private final String hostname;
     private final String user;
     private final List<String> orgs;
     private final List<TeamAccountInfo> teams;
@@ -20,6 +18,7 @@ public class Token {
     private final String clientId;
     private final String userType;
     private final String accountId;
+    private String code;
 
     public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType,
                  String accountId) {
@@ -51,14 +50,14 @@ public class Token {
         return jwt;
     }
 
-    @Field(nullable = true)
-    public void setCode(String code) {
-        this.code = code;
-    }
-
     @Field(required = true, nullable = true)
     public String getCode() {
         return code;
+    }
+
+    @Field(nullable = true)
+    public void setCode(String code) {
+        this.code = code;
     }
 
     @Field(nullable = true)

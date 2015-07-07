@@ -19,7 +19,7 @@ public class GithubConfig {
     private List<String> allowedOrganizations;
 
     public GithubConfig(Boolean enabled, String accessMode, String clientId, List<String> allowedUsers, List<String> allowedOrganizations, String hostName,
-     String scheme) {
+                        String scheme) {
         this.enabled = enabled;
         this.accessMode = accessMode;
         this.clientId = clientId;

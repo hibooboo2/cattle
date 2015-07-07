@@ -1,7 +1,8 @@
 package io.cattle.platform.iaas.api.auth.internal.rancher;
 
 
-import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -14,7 +15,6 @@ import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.HashSet;
-
 import javax.inject.Inject;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -49,7 +49,7 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
         if (!policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
             return null;
         }
-        Account account=  objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+        Account account = objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
         return account;
     }
 

@@ -4,13 +4,15 @@ import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.interfaces.TokenHandler;
+import io.cattle.platform.iaas.api.auth.AuthUtils;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.iaas.api.auth.integrations.github.constants.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.TeamAccountInfo;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.Token;
+import io.cattle.platform.iaas.api.auth.interfaces.TokenHandler;
+import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
@@ -26,32 +28,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicLongProperty;
 
 public class GithubTokenHandler implements TokenHandler {
 
-    @Inject
-    private TokenService tokenService;
-    @Inject
-    private AuthDao authDao;
-    @Inject
-    private GithubClient githubClient;
-
     private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
-    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
-
     @Inject
     ProjectResourceManager projectResourceManager;
     @Inject
     ObjectManager objectManager;
     @Inject
     GithubUtils githubUtils;
+    @Inject
+    private TokenService tokenService;
+    @Inject
+    private AuthDao authDao;
+    @Inject
+    private GithubClient githubClient;
 
     public Token getGithubToken(String accessToken) throws IOException {
         List<String> idList = new ArrayList<>();
@@ -65,43 +62,45 @@ public class GithubTokenHandler implements TokenHandler {
         Set<ExternalId> externalIds = new HashSet<>();
 
         idList.add(userAccountInfo.getAccountId());
-        externalIds.add(new ExternalId(userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE, userAccountInfo.getAccountName()));
+        externalIds.add(new ExternalId(userAccountInfo.getAccountId(), userAccountInfo.getAccountName()));
 
         for (GithubAccountInfo info : orgAccountInfo) {
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
             orgIds.add(info.getAccountId());
             teamsAccountInfo.addAll(githubClient.getOrgTeamInfo(accessToken, info.getAccountName()));
-            externalIds.add(new ExternalId(info.getAccountId(), GithubConstants.ORG_SCOPE, info.getAccountName()));
+            externalIds.add(new ExternalId(info.getAccountId(), info.getAccountName()));
         }
 
         for (TeamAccountInfo info : teamsAccountInfo) {
             teamIds.add(info.getId());
             teamToOrg.put(info.getId(), info.getOrg());
             idList.add(info.getId());
-            externalIds.add(new ExternalId(info.getId(), GithubConstants.TEAM_SCOPE, info.getOrg() + ":" + info.getName()));
+            externalIds.add(new ExternalId(info.getId(), info.getOrg() + ":" + info.getName()));
         }
 
-        Account account;
+        Account account = null;
         boolean hasAccessToAProject = authDao.hasAccessToAnyProject(externalIds, false, null);
-        if (SECURITY.get()) {
-            githubUtils.isAllowed(idList, externalIds);
-            account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
-            if (null == account) {
-                account = authDao.createAccount(userAccountInfo.getAccountName(), AccountConstants.USER_KIND, userAccountInfo.getAccountId(),
-                        GithubConstants.USER_SCOPE);
-                if (!hasAccessToAProject) {
-                    projectResourceManager.createProjectForUser(account);
+        if (SecurityConstants.SECURITY.get()) {
+            if (githubUtils.isAllowed(idList, externalIds)) {
+                account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
+                if (null == account) {
+                    account = authDao.createAccount(userAccountInfo.getAccountName(), AccountConstants.USER_KIND, userAccountInfo.getAccountId(),
+                            GithubConstants.USER_SCOPE);
+                    if (!hasAccessToAProject) {
+                        projectResourceManager.createProjectForUser(account);
+                    }
                 }
             }
         } else {
             account = authDao.getAdminAccount();
             authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
-            authDao.ensureAllProjectsHaveNonRancherIdMembers(new ExternalId(userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE,
+            authDao.ensureAllProjectsHaveNonRancherIdMembers(new ExternalId(userAccountInfo.getAccountId(),
                     userAccountInfo.getAccountName()));
         }
         Map<String, Object> jsonData = new HashMap<>();
-        jsonData.put(GithubConstants.ACCOUNT_ID, userAccountInfo.getAccountId());
+        jsonData.put(AuthUtils.TOKEN, GithubConstants.GITHUB_JWT);
+        jsonData.put(AuthUtils.ACCOUNT_ID, userAccountInfo.getAccountId());
         jsonData.put("teamToOrg", teamToOrg);
         jsonData.put(GithubConstants.USERNAME, userAccountInfo.getAccountName());
         jsonData.put(GithubConstants.TEAM_IDS, teamIds);

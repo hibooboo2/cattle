@@ -99,6 +99,14 @@
 
         "instanceStop.deallocateFromHost" : "cr",
 
+        "ldapconfig" : "cru",
+        "ldapconfig.server" : "cr",
+        "ldapconfig.port" : "cr",
+        "ldapconfig.enabled" : "cr",
+        "ldapconfig.loginDomain" : "cr",
+        "ldapconfig.domain" : "cr",
+        "ldapconfig.accessMode" : "cr",
+
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",
         "processDefinition.postProcessListeners" : "r",
