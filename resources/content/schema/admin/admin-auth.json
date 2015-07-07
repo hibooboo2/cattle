@@ -28,6 +28,9 @@
         "apiKey.publicValue" : "cr",
         "apiKey.secretValue" : "cr", 
 
+        "authconfig": "crud",
+        "authconfig.*": "crud",
+
         "configItem" : "r",
         "configItem.sourceVersion" : "r",
 
@@ -98,6 +101,20 @@
         "instanceLink.ports" : "r",
 
         "instanceStop.deallocateFromHost" : "cr",
+
+        "ldapconfig" : "cru",
+        "ldapconfig.*" : "cr",
+        "ldapconfig.server" : "cr",
+        "ldapconfig.port" : "cr",
+        "ldapconfig.enabled" : "cr",
+        "ldapconfig.loginDomain" : "cr",
+        "ldapconfig.domain" : "cr",
+        "ldapconfig.accessMode" : "cr",
+        "ldapconfig.name" : "r",
+        "ldapconfig.searchFieldUser" : "cr",
+        "ldapconfig.serviceAccountUsername" : "cr",
+        "ldapconfig.serviceAccountPassword" : "cr",
+        "ldapconfig.tls" : "cr",
 
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",

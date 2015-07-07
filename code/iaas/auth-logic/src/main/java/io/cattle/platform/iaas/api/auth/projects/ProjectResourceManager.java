@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.projects;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -11,7 +11,6 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integrations.github.resource.Member;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -40,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import javax.inject.Inject;
 
 public class ProjectResourceManager extends AbstractObjectResourceManager {
@@ -61,7 +59,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "project" };
+        return new String[]{"project"};
     }
 
     @Override
@@ -78,7 +76,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         if (obj != null) {
             if (obj instanceof String) {
                 id = (String) obj;
-            }else {
+            } else {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
             Account project = giveProjectAccess(getObjectManager().loadResource(Account.class, id), policy);
@@ -90,23 +88,23 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
         boolean isAdmin;
         Object getAll = request.getRequestParams().get("all");
-        if (getAll != null){
+        if (getAll != null) {
             String all = ((String[]) getAll)[0];
-            if (all.equalsIgnoreCase("true") && policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)){
+            if (all.equalsIgnoreCase("true") && policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
                 isAdmin = true;
-            }else {
+            } else {
                 isAdmin = false;
             }
-        } else{
+        } else {
             isAdmin = false;
         }
-        List<Account> projects = authDao.getAccessibleProjects(policy.getExternalIds(),
-            isAdmin, policy.getAccountId());
+        List<Account> projects = authDao.getAccessibleProjects(policy.getIdentities(),
+                isAdmin, policy.getAccountId());
         List<Account> projectsFiltered = new ArrayList<>();
-        for (Account project: projects){
+        for (Account project : projects) {
             projectsFiltered.add(giveProjectAccess(project, policy));
         }
-        return  projectsFiltered;
+        return projectsFiltered;
     }
 
     private Account giveProjectAccess(Account project, Policy policy) {
@@ -114,12 +112,12 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             return null;
         }
         if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             return null;
         }
         boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
-                .getExternalIds());
-        if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) && !isOwner){
+                .getIdentities());
+        if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) && !isOwner) {
             return null;
         }
         if (isOwner) {
@@ -156,9 +154,8 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     public Account createProjectForUser(Account account) {
         Account project = authDao.createProject(account.getName() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
-        ExternalId externalId = new ExternalId(account.getExternalId(), account.getExternalIdType(), account.getName());
-        authDao.createProjectMember(project, new Member(externalId, ProjectConstants.OWNER));
-
+        Identity identity = new Identity(account.getExternalIdType(), account.getExternalId());
+        authDao.createProjectMember(project, new Member(identity, ProjectConstants.OWNER));
         return project;
     }
 
@@ -168,11 +165,11 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             return super.deleteInternal(type, id, obj, apiRequest);
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
-        if (authDao.getAccountById(Long.valueOf(id)) == null){
+        if (authDao.getAccountById(Long.valueOf(id)) == null) {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
         if (!authDao.isProjectOwner(Long.valueOf(id), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         try {
@@ -182,7 +179,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
                     ProcessUtils.chainInData(new HashMap<String, Object>(), AccountConstants.ACCOUNT_DEACTIVATE, AccountConstants.ACCOUNT_REMOVE));
         }
         Account deletedProject = (Account) objectManager.reload(obj);
-        for (ProjectMember member: authDao.getActiveProjectMembers(deletedProject.getId())){
+        for (ProjectMember member : authDao.getActiveProjectMembers(deletedProject.getId())) {
             try {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, member, null);
             } catch (ProcessCancelException e) {
@@ -204,9 +201,9 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Account project = (Account) obj;
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             return super.updateInternal(type, id, obj, apiRequest);
-        }else {
+        } else {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to update the name or description.", null);
         }
     }
@@ -215,7 +212,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     protected Relationship getRelationship(String type, String linkName) {
         if (linkName.equalsIgnoreCase("projectmembers")) {
             Relationship rel = super.getMetaDataManager().getRelationship(type, linkName, "projectid");
-            if (rel != null){
+            if (rel != null) {
                 return rel;
             }
         }
@@ -229,13 +226,13 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         Map<String, URL> links = new TreeMap<>();
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
-        for ( Schema childSchema : schemaFactory.listSchemas() ) {
-            if ( ! childSchema.getCollectionMethods().contains(Schema.Method.GET.toString()) ) {
+        for (Schema childSchema : schemaFactory.listSchemas()) {
+            if (!childSchema.getCollectionMethods().contains(Schema.Method.GET.toString())) {
                 continue;
             }
 
             URL link = urlBuilder.resourceLink(resource, childSchema.getPluralName());
-            if ( link != null ) {
+            if (link != null) {
                 links.put(childSchema.getPluralName(), link);
             }
         }
