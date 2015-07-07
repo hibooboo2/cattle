@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -34,6 +33,11 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     List<SchemaFactory> schemaFactoryList;
     int priority = Priority.DEFAULT;
     AchaiusPolicyOptionsFactory optionsFactory;
+
+    public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
+        Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
+        return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
+    }
 
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
@@ -83,11 +87,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         }
 
         return null;
-    }
-
-    public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
-        Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
-        return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 
     public List<SchemaFactory> getSchemaFactoryList() {

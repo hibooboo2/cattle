@@ -42,7 +42,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING
-        ));
+    ));
 
     AchaiusPolicyOptionsFactory optionsFactory;
     ResourceManagerLocator locator;

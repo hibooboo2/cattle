@@ -3,7 +3,7 @@ package io.cattle.platform.iaas.api.auth.integrations.github.resource;
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.core.model.ProjectMember;
 
-public class Member  {
+public class Member {
 
     private String externalId;
     private String externalIdType;

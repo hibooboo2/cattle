@@ -28,11 +28,11 @@ public interface AuthDao {
 
     List<Account> getAccessibleProjects(Set<ExternalId> externalIdSet, boolean isAdmin, Long usingAccount);
 
-    boolean hasAccessToProject(long projectId , Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
+    boolean hasAccessToProject(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
 
-    boolean isProjectOwner(long projectId , Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
+    boolean isProjectOwner(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
 
-    boolean isProjectMember(long projectId , Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
+    boolean isProjectMember(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
 
     List<? extends ProjectMember> getActiveProjectMembers(long projectId);
 

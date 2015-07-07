@@ -7,9 +7,9 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.iaas.api.auth.interfaces.ExternalIdHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.Member;
+import io.cattle.platform.iaas.api.auth.interfaces.ExternalIdHandler;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -21,8 +21,12 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,12 +68,12 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
         if (StringUtils.isNotEmpty(projectId)) {
-            members =  authDao.getActiveProjectMembers(Long.valueOf(projectId));
+            members = authDao.getActiveProjectMembers(Long.valueOf(projectId));
         } else {
             members = authDao.getActiveProjectMembers(policy.getAccountId());
         }
         List<ProjectMember> membersToReturn = new ArrayList<>();
-        for (ProjectMember member: members){
+        for (ProjectMember member : members) {
             member = untransform(member);
             membersToReturn.add(member);
             policy.grantObjectAccess(member);
@@ -79,7 +83,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
 
     @Override
     public String[] getTypes() {
-        return new String[] { "projectMember" };
+        return new String[]{"projectMember"};
     }
 
     @Override
@@ -96,17 +100,17 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         List<ProjectMember> membersCreated = new ArrayList<>();
         Set<Member> membersTransformed = new HashSet<>();
 
-        if ((members == null || members.isEmpty())){
+        if ((members == null || members.isEmpty())) {
             Policy policy = (Policy) ApiContext.getContext().getPolicy();
             ExternalId idToUse = null;
-            for (ExternalId externalId:  policy.getExternalIds()){
-                if (idToUse == null){
-                    if (externalId.getType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)){
+            for (ExternalId externalId : policy.getExternalIds()) {
+                if (idToUse == null) {
+                    if (externalId.getType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
                         idToUse = externalId;
                     }
                 }
             }
-            if (idToUse != null){
+            if (idToUse != null) {
                 Member owner = new Member(idToUse, ProjectConstants.OWNER);
                 membersTransformed.add(owner);
             }
@@ -119,15 +123,15 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             }
         }
         for (Map<String, String> newMember : members) {
-            ExternalId givenExternalId = new ExternalId(newMember.get("externalId"), newMember.get("externalIdType"));
+            ExternalId givenExternalId = new ExternalId(newMember.get("externalId"), null, null, newMember.get("externalIdType"));
             ExternalId newExternalId = null;
-            for (ExternalIdHandler externalIdHandler: externalIdHandlers){
+            for (ExternalIdHandler externalIdHandler : externalIdHandlers) {
                 newExternalId = externalIdHandler.transform(givenExternalId);
-                if(newExternalId != null){
+                if (newExternalId != null) {
                     break;
                 }
             }
-            if (newExternalId != null){
+            if (newExternalId != null) {
                 membersTransformed.add(new Member(newExternalId, newMember.get("role")));
             } else {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidExternalIdType", "External Id Type Not supported.", null);
@@ -135,19 +139,19 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         }
 
         boolean hasOwner = false;
-        for(Member member: membersTransformed){
-            if (member.getRole().equalsIgnoreCase(ProjectConstants.OWNER)){
+        for (Member member : membersTransformed) {
+            if (member.getRole().equalsIgnoreCase(ProjectConstants.OWNER)) {
                 hasOwner = true;
             }
         }
 
-        if (!hasOwner){
+        if (!hasOwner) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner.", null);
 
         }
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
 
-        for (ProjectMember member: membersCreated) {
+        for (ProjectMember member : membersCreated) {
             untransform(member);
         }
         return membersCreated;
@@ -162,12 +166,12 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         this.externalIdHandlers = externalIdHandlers;
     }
 
-    public ProjectMember transform(ProjectMember member){
-        ExternalId externalId = new ExternalId(member.getExternalId(), member.getExternalIdType(), member.getName());
+    public ProjectMember transform(ProjectMember member) {
+        ExternalId externalId = new ExternalId(member.getExternalId(), member.getName(), null, member.getExternalIdType());
         ExternalId newExternalId;
-        for (ExternalIdHandler externalIdHandler: externalIdHandlers){
+        for (ExternalIdHandler externalIdHandler : externalIdHandlers) {
             newExternalId = externalIdHandler.transform(externalId);
-            if(newExternalId != null){
+            if (newExternalId != null) {
                 break;
             }
         }
@@ -177,16 +181,16 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         return member;
     }
 
-    public ProjectMember untransform(ProjectMember member){
-        ExternalId externalId = new ExternalId(member.getExternalId(), member.getExternalIdType(), member.getName());
+    public ProjectMember untransform(ProjectMember member) {
+        ExternalId externalId = new ExternalId(member.getExternalId(), member.getName(), null, member.getExternalIdType());
         ExternalId newExternalId = null;
-        for (ExternalIdHandler externalIdHandler: externalIdHandlers){
+        for (ExternalIdHandler externalIdHandler : externalIdHandlers) {
             newExternalId = externalIdHandler.untransform(externalId);
-            if(newExternalId != null){
+            if (newExternalId != null) {
                 break;
             }
         }
-        if (newExternalId == null){
+        if (newExternalId == null) {
             return null;
         }
         member.setName(newExternalId.getName());

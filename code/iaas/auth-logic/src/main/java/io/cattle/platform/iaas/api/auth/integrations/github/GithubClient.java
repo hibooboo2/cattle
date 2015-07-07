@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -26,20 +25,17 @@ import org.apache.http.message.BasicNameValuePair;
 
 public class GithubClient {
 
+    private static final Log logger = LogFactory.getLog(GithubClient.class);
+    private static final String LOGIN = "login";
     @Inject
     private JsonMapper jsonMapper;
-
     @Inject
     private GithubUtils githubUtils;
-
-    private static final Log logger = LogFactory.getLog(GithubClient.class);
-
-    private static final String LOGIN = "login";
 
     public String getAccessToken(String code) throws IOException {
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
-        if (!githubConfigured()){
+        if (!githubConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.GITHUBCONFIG, "No Github Client id and secret found.", null);
         }
 
@@ -49,7 +45,7 @@ public class GithubClient {
 
         Map<String, Object> jsonData;
 
-        HttpResponse response = Request.Post(githubUtils.getURL(GithubClientEndpoints.TOKEN))
+        HttpResponse response = Request.Post(getURL(GithubClientEndpoints.TOKEN))
                 .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).bodyForm(requestData)
                 .execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -67,7 +63,7 @@ public class GithubClient {
 
     public boolean githubConfigured() {
         boolean githubConfigured = false;
-        if (StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) && StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get())){
+        if (StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) && StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get())) {
             githubConfigured = true;
         }
         return githubConfigured;
@@ -79,7 +75,7 @@ public class GithubClient {
         }
         Map<String, Object> jsonData;
 
-        HttpResponse response = Request.Get(githubUtils.getURL(GithubClientEndpoints.USER_INFO))
+        HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USER_INFO))
                 .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken)
                 .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -100,7 +96,7 @@ public class GithubClient {
         List<GithubAccountInfo> orgInfoList = new ArrayList<>();
         List<Map<String, Object>> jsonData;
 
-        HttpResponse response = Request.Get(githubUtils.getURL(GithubClientEndpoints.ORG_INFO))
+        HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORG_INFO))
                 .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken)
                 .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
 
@@ -125,7 +121,7 @@ public class GithubClient {
         List<TeamAccountInfo> teamInfoList = new ArrayList<>();
         List<Map<String, Object>> jsonData;
 
-        HttpResponse response = Request.Get(githubUtils.getURL(GithubClientEndpoints.ORGS) + org + "/teams").addHeader(GithubConstants.AUTHORIZATION, "token " +
+        HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORGS) + org + "/teams").addHeader(GithubConstants.AUTHORIZATION, "token " +
                 "" + githubAccessToken).addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
@@ -150,9 +146,9 @@ public class GithubClient {
             if (StringUtils.isEmpty(username)) {
                 return null;
             }
-            HttpResponse response = Request.Get(githubUtils.getURL(GithubClientEndpoints.USERS) + username)
+            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USERS) + username)
                     .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).addHeader(
-                    GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
+                            GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
@@ -163,7 +159,7 @@ public class GithubClient {
             String accountId = ObjectUtils.toString(jsonData.get("id"));
             String accountName = ObjectUtils.toString(jsonData.get(LOGIN));
             return new GithubAccountInfo(accountId, accountName);
-        } catch (IOException e){
+        } catch (IOException e) {
             logger.error(e);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve UserId from Github", null);
         }
@@ -172,11 +168,11 @@ public class GithubClient {
 
     public GithubAccountInfo getOrgIdByName(String org) {
         String gitHubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
-        try{
+        try {
             if (StringUtils.isEmpty(org)) {
                 return null;
             }
-            HttpResponse response = Request.Get(githubUtils.getURL(GithubClientEndpoints.ORGS) + org)
+            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORGS) + org)
                     .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON)
                     .addHeader(GithubConstants.AUTHORIZATION, "token " + gitHubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
@@ -189,19 +185,55 @@ public class GithubClient {
             String accountId = ObjectUtils.toString(jsonData.get("id"));
             String accountName = ObjectUtils.toString(jsonData.get(LOGIN));
             return new GithubAccountInfo(accountId, accountName);
-        } catch (IOException e){
+        } catch (IOException e) {
             logger.error(e);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve orgId from Github", null);
         }
     }
 
     public String getTeamOrgById(String id) {
-        return  githubUtils.getTeamOrgById(id);
+        return githubUtils.getTeamOrgById(id);
     }
 
     private void noGithub(Integer statusCode) {
         throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
                 "Non-200 Response from Github", "Status code from Github: " + Integer.toString(statusCode));
+    }
+
+    public String getURL(GithubClientEndpoints val) {
+        String hostName;
+        String apiEndpoint;
+        if (StringUtils.isBlank(GithubConstants.GITHUB_HOSTNAME.get())) {
+            hostName = GithubConstants.GITHUB_DEFAULT_HOSTNAME;
+            apiEndpoint = GithubConstants.GITHUB_API;
+        } else {
+            hostName = GithubConstants.SCHEME.get() + GithubConstants.GITHUB_HOSTNAME.get();
+            apiEndpoint = GithubConstants.SCHEME.get() + GithubConstants.GITHUB_HOSTNAME.get() + GithubConstants.GHE_API;
+        }
+        String toReturn;
+        switch (val) {
+            case API:
+                toReturn = apiEndpoint;
+                break;
+            case TOKEN:
+                toReturn = hostName + "/login/oauth/access_token";
+                break;
+            case USERS:
+                toReturn = apiEndpoint + "/users/";
+                break;
+            case ORGS:
+                toReturn = apiEndpoint + "/orgs/";
+                break;
+            case USER_INFO:
+                toReturn = apiEndpoint + "/user";
+                break;
+            case ORG_INFO:
+                toReturn = apiEndpoint + "/user/orgs";
+                break;
+            default:
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "GithubClient", "Attempted to get invalid Api endpoint.", null);
+        }
+        return toReturn;
     }
 
 }
