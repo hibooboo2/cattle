@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.projects;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.projects.ProjectMemberResourceManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -11,10 +10,9 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
-public class SetProjectMembersActionHandler implements ActionHandler{
+public class SetProjectMembersActionHandler implements ActionHandler {
 
     @Inject
     AuthDao authDao;

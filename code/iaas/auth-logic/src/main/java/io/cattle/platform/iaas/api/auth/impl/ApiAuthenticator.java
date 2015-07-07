@@ -2,14 +2,14 @@ package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.interfaces.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.interfaces.ExternalIdHandler;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -22,18 +22,14 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicBooleanProperty;
-
 public class ApiAuthenticator extends AbstractApiRequestHandler {
 
-    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
@@ -44,6 +40,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     List<AuthorizationProvider> authorizationProviders;
     @Inject
     ObjectManager objectManager;
+
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (ApiContext.getContext().getPolicy() != null) {
@@ -68,7 +65,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
         if (schemaFactory == null) {
             log.error("Failed to find a schema for account type [{}]", account.getKind());
-            if (SECURITY.get()) {
+            if (SecurityConstants.SECURITY.get()) {
                 throwUnauthorizated();
             }
         }
@@ -128,7 +125,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             return account;
         }
 
-        if (SECURITY.get()) {
+        if (SecurityConstants.SECURITY.get()) {
             for (AccountLookup lookup : accountLookups) {
                 if (lookup.challenge(request)) {
                     break;
@@ -175,19 +172,19 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         if (StringUtils.isEmpty(unobfuscatedId)) {
             return null;
         }
-        try{
+        try {
             project = authDao.getAccountById(new Long(unobfuscatedId));
             if (project == null || !project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
-            if (authenticatedAsAccount.getId() == project.getId()){
+            if (authenticatedAsAccount.getId() == project.getId()) {
                 return authenticatedAsAccount;
             }
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         Policy tempPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, externalIds, request);
-        if (project != null && authDao.hasAccessToProject(project.getId(), authenticatedAsAccount.getId(),
+        if (authDao.hasAccessToProject(project.getId(), authenticatedAsAccount.getId(),
                 tempPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), externalIds)) {
             return project;
         }

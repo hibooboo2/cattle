@@ -1,8 +1,9 @@
 package io.cattle.platform.iaas.api.auth.integrations.github;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.model.Setting;
-import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.iaas.api.auth.AuthUtils;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.integrations.github.constants.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integrations.github.resource.GithubConfig;
@@ -18,20 +19,16 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class GithubConfigManager extends AbstractNoOpResourceManager {
 
-    private static final String ENABLED = "enabled";
-    private static final String ACCESSMODE = "accessMode";
     private static final String CLIENT_ID = "clientId";
     private static final String CLIENT_SECRET = "clientSecret";
     private static final String ALLOWED_USERS = "allowedUsers";
@@ -39,7 +36,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String HOSTNAME = "hostname";
     private static final String SCHEME = "scheme";
 
-    private static final String SECURITY_SETTING = "api.security.enabled";
     private static final String ACCESSMODE_SETTING = "api.auth.github.access.mode";
     private static final String CLIENT_ID_SETTING = "api.auth.github.client.id";
     private static final String CLIENT_SECRET_SETTING = "api.auth.github.client.secret";
@@ -48,19 +44,26 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String HOSTNAME_SETTING = "api.github.domain";
     private static final String SCHEME_SETTING = "api.github.scheme";
 
-    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean(SECURITY_SETTING);
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);
     private static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESSMODE_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_USERS = ArchaiusUtil.getString(ALLOWED_USERS_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_ORGS = ArchaiusUtil.getString(ALLOWED_ORGS_SETTING);
 
-    private JsonMapper jsonMapper;
-    private ObjectManager objectManager;
-    private GithubClient client;
+    @Inject
+    JsonMapper jsonMapper;
+
+    @Inject
+    ObjectManager objectManager;
+
+    @Inject
+    GithubClient client;
+
+    @Inject
+    SettingsUtils settingsUtils;
 
     @Override
     public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { GithubConfig.class };
+        return new Class<?>[]{GithubConfig.class};
     }
 
     @SuppressWarnings("unchecked")
@@ -70,16 +73,16 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
             return null;
         }
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
-        changeSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
-        changeSetting(SCHEME_SETTING, config.get(SCHEME));
-        changeSetting(SECURITY_SETTING, config.get(ENABLED));
-        changeSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
-        if (config.get(CLIENT_SECRET) != null){
-            changeSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
+        settingsUtils.changeSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
+        settingsUtils.changeSetting(SCHEME_SETTING, config.get(SCHEME));
+        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
+        settingsUtils.changeSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
+        if (config.get(CLIENT_SECRET) != null) {
+            settingsUtils.changeSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
         }
-        changeSetting(ACCESSMODE_SETTING, config.get(ACCESSMODE));
-        changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS)), ","));
-        changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS)), ","));
+        settingsUtils.changeSetting(ACCESSMODE_SETTING, config.get(AuthUtils.ACCESSMODE));
+        settingsUtils.changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS)), ","));
+        settingsUtils.changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS)), ","));
         return currentGithubConfig(config);
     }
 
@@ -87,12 +90,12 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private GithubConfig currentGithubConfig(Map<String, Object> config) {
         GithubConfig currentConfig = (GithubConfig) listInternal(null, null, null, null);
         Boolean enabled = currentConfig.getEnabled();
-        if (config.get(ENABLED) != null) {
-            enabled = (Boolean) config.get(ENABLED);
+        if (config.get(SecurityConstants.ENABLED) != null) {
+            enabled = (Boolean) config.get(SecurityConstants.ENABLED);
         }
         String accessMode = currentConfig.getAccessMode();
-        if (config.get(ACCESSMODE) != null) {
-            accessMode = (String) config.get(ACCESSMODE);
+        if (config.get(AuthUtils.ACCESSMODE) != null) {
+            accessMode = (String) config.get(AuthUtils.ACCESSMODE);
         }
         String hostname = currentConfig.getHostname();
         if (config.get(HOSTNAME) != null) {
@@ -148,36 +151,9 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return appendedList;
     }
 
-    private void changeSetting(String name, Object value) {
-        if (name == null) {
-            return;
-        }
-        Setting setting = objectManager.findOne(Setting.class, "name", name);
-        if (value == null) {
-            if (setting != null) {
-                objectManager.delete(setting);
-            } else{
-                return;
-            }
-        } else {
-            if (null == setting) {
-                objectManager.create(Setting.class, "name", name, "value", value);
-            } else {
-                objectManager.setFields(setting, "value", value);
-            }
-        }
-        DeferredUtils.defer(new Runnable() {
-
-            @Override
-            public void run() {
-                ArchaiusUtil.refresh();
-            }
-        });
-    }
-
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        boolean enabled = SECURITY.get();
+        boolean enabled = SecurityConstants.SECURITY.get();
         String clientId = GITHUB_CLIENT_ID.get();
         String accessMode = ACCESS_MODE.get();
         String hostname = GithubConstants.GITHUB_HOSTNAME.get();
@@ -213,20 +189,5 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
             strings.add(element);
         }
         return strings;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    @Inject
-    public void setGithubClient(GithubClient client) {
-        this.client = client;
     }
 }

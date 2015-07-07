@@ -54,6 +54,15 @@
     <bean class="io.cattle.platform.iaas.api.auth.internal.rancher.RancherExternalIdHandler" />
     <bean class="io.cattle.platform.iaas.api.auth.integrations.github.GithubExternalIdHandler" />
 
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapAuthImpl" />
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapExternalIdHandler" />
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapClient" />
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapTokenHandler" />
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapUtils" />
+    <bean class="io.cattle.platform.iaas.api.auth.providers.ldap.LdapConfigManager" />
+
+    <bean class="io.cattle.platform.iaas.api.auth.SettingsUtils" />
+
     <extension:discover class="io.cattle.platform.iaas.api.auth.interfaces.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.interfaces.AccountLookup"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.interfaces.TokenHandler"/>
