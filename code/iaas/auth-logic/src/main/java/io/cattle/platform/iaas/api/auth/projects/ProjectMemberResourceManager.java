@@ -1,15 +1,15 @@
 package io.cattle.platform.iaas.api.auth.projects;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.iaas.api.auth.interfaces.ExternalIdHandler;
+import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integrations.github.resource.Member;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -17,12 +17,17 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,8 +44,10 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    IdentityManager identityManager;
 
-    private List<ExternalIdHandler> externalIdHandlers;
+    private List<IdentityTransformationHandler> identityTransformationHandlers;
 
     @Override
     protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
@@ -54,32 +61,47 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         if (StringUtils.isNotEmpty(id)) {
             ProjectMember projectMember = authDao.getProjectMember(Long.valueOf(id));
             if (!authDao.hasAccessToProject(projectMember.getProjectId(), policy.getAccountId(),
-                    policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                    policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
-            projectMember = untransform(projectMember);
+//            projectMember = untransform(projectMember);
+            Identity identity  = getMemberIdentity(projectMember);
+            policy.grantObjectAccess(identity);
             policy.grantObjectAccess(projectMember);
             return Arrays.asList(projectMember);
         }
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
         if (StringUtils.isNotEmpty(projectId)) {
-            members =  authDao.getActiveProjectMembers(Long.valueOf(projectId));
+            members = authDao.getActiveProjectMembers(Long.valueOf(projectId));
         } else {
             members = authDao.getActiveProjectMembers(policy.getAccountId());
         }
         List<ProjectMember> membersToReturn = new ArrayList<>();
-        for (ProjectMember member: members){
+        for (ProjectMember member : members) {
             member = untransform(member);
             membersToReturn.add(member);
             policy.grantObjectAccess(member);
         }
-        return membersToReturn;
+        List<Identity> identities = new ArrayList<>();
+        for (ProjectMember member:members){
+            Identity identity = getMemberIdentity(member);
+            identities.add(identity);
+            policy.grantObjectAccess(identity);
+        }
+        return identities;
+    }
+
+    private Identity getMemberIdentity(ProjectMember member) {
+        if (member == null){
+            return null;
+        }
+        return new Identity(identityManager.getIdentity(member), member.getRole(), member.getProjectId());
     }
 
     @Override
     public String[] getTypes() {
-        return new String[] { "projectMember" };
+        return new String[]{"projectMember"};
     }
 
     @Override
@@ -96,17 +118,17 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         List<ProjectMember> membersCreated = new ArrayList<>();
         Set<Member> membersTransformed = new HashSet<>();
 
-        if ((members == null || members.isEmpty())){
+        if ((members == null || members.isEmpty())) {
             Policy policy = (Policy) ApiContext.getContext().getPolicy();
-            ExternalId idToUse = null;
-            for (ExternalId externalId:  policy.getExternalIds()){
-                if (idToUse == null){
-                    if (externalId.getType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)){
-                        idToUse = externalId;
+            Identity idToUse = null;
+            for (Identity identity : policy.getIdentities()) {
+                if (idToUse == null) {
+                    if (identity.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
+                        idToUse = identity;
                     }
                 }
             }
-            if (idToUse != null){
+            if (idToUse != null) {
                 Member owner = new Member(idToUse, ProjectConstants.OWNER);
                 membersTransformed.add(owner);
             }
@@ -119,79 +141,57 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             }
         }
         for (Map<String, String> newMember : members) {
-            ExternalId givenExternalId = new ExternalId(newMember.get("externalId"), newMember.get("externalIdType"));
-            ExternalId newExternalId = null;
-            for (ExternalIdHandler externalIdHandler: externalIdHandlers){
-                newExternalId = externalIdHandler.transform(givenExternalId);
-                if(newExternalId != null){
+            Identity givenIdentity = new Identity(newMember.get("externalIdType"), newMember.get("externalId"));
+            Identity newIdentity = null;
+            for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
+                newIdentity = identityTransformationHandler.transform(givenIdentity);
+                if (newIdentity != null) {
                     break;
                 }
             }
-            if (newExternalId != null){
-                membersTransformed.add(new Member(newExternalId, newMember.get("role")));
+            if (newIdentity != null) {
+                membersTransformed.add(new Member(newIdentity, newMember.get("role")));
             } else {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidExternalIdType", "External Id Type Not supported.", null);
             }
         }
 
         boolean hasOwner = false;
-        for(Member member: membersTransformed){
-            if (member.getRole().equalsIgnoreCase(ProjectConstants.OWNER)){
+        for (Member member : membersTransformed) {
+            if (member.getRole().equalsIgnoreCase(ProjectConstants.OWNER)) {
                 hasOwner = true;
             }
         }
 
-        if (!hasOwner){
+        if (!hasOwner) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner.", null);
 
         }
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
 
-        for (ProjectMember member: membersCreated) {
+        for (ProjectMember member : membersCreated) {
             untransform(member);
         }
         return membersCreated;
     }
 
-    public List<ExternalIdHandler> getExternalIdHandlers() {
-        return externalIdHandlers;
+    public List<IdentityTransformationHandler> getIdentityTransformationHandlers() {
+        return identityTransformationHandlers;
     }
 
     @Inject
-    public void setExternalIdHandlers(List<ExternalIdHandler> externalIdHandlers) {
-        this.externalIdHandlers = externalIdHandlers;
+    public void setIdentityTransformationHandlers(List<IdentityTransformationHandler> identityTransformationHandlers) {
+        this.identityTransformationHandlers = identityTransformationHandlers;
     }
 
-    public ProjectMember transform(ProjectMember member){
-        ExternalId externalId = new ExternalId(member.getExternalId(), member.getExternalIdType(), member.getName());
-        ExternalId newExternalId;
-        for (ExternalIdHandler externalIdHandler: externalIdHandlers){
-            newExternalId = externalIdHandler.transform(externalId);
-            if(newExternalId != null){
-                break;
-            }
-        }
-        member.setName(externalId.getName());
-        member.setExternalId(externalId.getId());
-        member.setExternalIdType(externalId.getType());
-        return member;
-    }
-
-    public ProjectMember untransform(ProjectMember member){
-        ExternalId externalId = new ExternalId(member.getExternalId(), member.getExternalIdType(), member.getName());
-        ExternalId newExternalId = null;
-        for (ExternalIdHandler externalIdHandler: externalIdHandlers){
-            newExternalId = externalIdHandler.untransform(externalId);
-            if(newExternalId != null){
-                break;
-            }
-        }
-        if (newExternalId == null){
+    public ProjectMember untransform(ProjectMember member) {
+        Identity newIdentity = identityManager.getIdentity(member);
+        if (newIdentity == null){
             return null;
         }
-        member.setName(newExternalId.getName());
-        member.setExternalId(newExternalId.getId());
-        member.setExternalIdType(newExternalId.getType());
+        member.setName(newIdentity.getName());
+        member.setExternalId(newIdentity.getExternalId());
+        member.setExternalIdType(newIdentity.getExternalIdType());
         return member;
     }
 }

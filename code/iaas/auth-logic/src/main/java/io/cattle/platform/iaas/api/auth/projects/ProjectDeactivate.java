@@ -13,7 +13,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import javax.inject.Inject;
 
-public class ProjectDeactivate implements ActionHandler{
+public class ProjectDeactivate implements ActionHandler {
 
     @Inject
     AuthDao authDao;
@@ -25,7 +25,7 @@ public class ProjectDeactivate implements ActionHandler{
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
         Account project = (Account) obj;
-        if (!project.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
+        if (!project.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
             return null;
         }
         project = authDao.getAccountById(project.getId());

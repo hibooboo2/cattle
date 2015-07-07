@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.OptionCallback;
 import io.cattle.platform.api.auth.impl.PolicyOptions;
@@ -13,7 +13,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
-import io.cattle.platform.iaas.api.auth.interfaces.AuthorizationProvider;
+import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -42,13 +42,13 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING
-        ));
+    ));
 
     AchaiusPolicyOptionsFactory optionsFactory;
     ResourceManagerLocator locator;
 
     @Override
-    public Policy getPolicy(final Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+    public Policy getPolicy(final Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
         PolicyOptions policyOptions = optionsFactory.getOptions(account);
 
         boolean apply = false;
@@ -66,7 +66,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         }
 
         final PolicyOptionsWrapper options = new PolicyOptionsWrapper(policyOptions);
-        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
+        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, identities, options);
 
         options.addCallback(Policy.AGENT_ID, new OptionCallback() {
             @Override
