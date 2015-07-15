@@ -1,8 +1,8 @@
 package io.cattle.platform.register.api;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.AccountLookup;
-import io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl;
+import io.cattle.platform.iaas.api.auth.interfaces.AccountLookup;
+import io.cattle.platform.iaas.api.auth.internal.rancher.BasicAuthImpl;
 import io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.register.util.RegisterConstants;
