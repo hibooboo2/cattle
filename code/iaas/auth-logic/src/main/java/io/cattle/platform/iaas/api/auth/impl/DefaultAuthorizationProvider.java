@@ -6,7 +6,7 @@ import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
-import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
+import io.cattle.platform.iaas.api.auth.interfaces.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;

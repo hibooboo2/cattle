@@ -13,7 +13,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
-import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
+import io.cattle.platform.iaas.api.auth.interfaces.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
