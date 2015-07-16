@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenHandler;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -18,20 +18,18 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.netflix.config.DynamicStringProperty;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
-    private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");
-    private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
-    private List<TokenHandler> tokenHandlers;
 
-    public List<TokenHandler> getTokenHandlers() {
-        return tokenHandlers;
+    private List<TokenCreator> tokenCreators;
+
+    public List<TokenCreator> getTokenCreators() {
+        return tokenCreators;
     }
 
     @Inject
-    public void setTokenHandlers(List<TokenHandler> tokenHandlers) {
-        this.tokenHandlers = tokenHandlers;
+    public void setTokenCreators(List<TokenCreator> tokenCreators) {
+        this.tokenCreators = tokenCreators;
     }
 
     @Override
@@ -54,9 +52,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     private Token createToken(ApiRequest request) throws IOException {
         Token token = null;
         List<ClientVisibleException> exceptions = new ArrayList<>();
-        for (TokenHandler tokenHandler : tokenHandlers) {
+        for (TokenCreator tokenCreator : tokenCreators) {
             try {
-                token = tokenHandler.createToken(request);
+                token = tokenCreator.createToken(request);
             } catch (ClientVisibleException e) {
                 exceptions.add(e);
             }
@@ -77,6 +75,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(null, null, null);
+        return new Token(SecurityConstants.SECURITY.get());
     }
 }

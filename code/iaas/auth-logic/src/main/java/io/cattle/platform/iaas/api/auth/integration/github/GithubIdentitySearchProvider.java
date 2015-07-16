@@ -5,7 +5,6 @@ import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClientEndpoints;
-import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -41,7 +40,7 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
         if (!githubClient.githubConfigured()) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.GITHUBCONFIG, "No Github Client id and secret found.", null);
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.CONFIG, "No Github Client id and secret found.", null);
         }
 
         requestData.add(new BasicNameValuePair(GithubConstants.CLIENT_ID, GithubConstants.GITHUB_CLIENT_ID.get()));

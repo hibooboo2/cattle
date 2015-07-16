@@ -131,10 +131,10 @@ public class LdapClient extends AbstractIdentitySearchProvider {
         if (!isConfigured()) {
             return null;
         }
-        if (username.startsWith(LdapConstants.LDAP_LOGIN_DOMAIN.get() + '\\')) {
+        if (username.contains("\\")) {
             return username;
         } else {
-            return LdapConstants.LDAP_LOGIN_DOMAIN.get() + '\\' + username;
+            return LdapConstants.LDAP_LOGIN_DOMAIN.get() + '\\' +username;
         }
     }
 

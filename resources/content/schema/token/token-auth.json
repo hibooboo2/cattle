@@ -6,6 +6,8 @@
         "token.jwt": "r",
         "token.code": "cr",
         "token.accountId": "r",
-        "token.identityId": "r"
+        "token.user": "r",
+        "token.enabled": "r",
+        "token.identities": "r"
     }
 }

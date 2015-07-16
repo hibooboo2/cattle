@@ -28,6 +28,9 @@
         "apiKey.publicValue" : "cr",
         "apiKey.secretValue" : "cr", 
 
+        "authconfig": "crud",
+        "authconfig.*": "crud",
+
         "configItem" : "r",
         "configItem.sourceVersion" : "r",
 

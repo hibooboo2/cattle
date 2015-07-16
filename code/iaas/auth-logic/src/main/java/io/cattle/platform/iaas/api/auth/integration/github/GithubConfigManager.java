@@ -7,6 +7,8 @@ import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubConfig;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.AuthConfig;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.AuthConfigManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -17,6 +19,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResource
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -27,27 +30,12 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.netflix.config.DynamicStringProperty;
 
-public class GithubConfigManager extends AbstractNoOpResourceManager {
+public class GithubConfigManager extends AbstractNoOpResourceManager implements AuthConfigManager {
 
     private static final String CLIENT_ID = "clientId";
     private static final String CLIENT_SECRET = "clientSecret";
-    private static final String ALLOWED_USERS = "allowedUsers";
-    private static final String ALLOWED_ORGS = "allowedOrganizations";
-    private static final String HOSTNAME = "hostname";
     private static final String SCHEME = "scheme";
-
-    private static final String ACCESSMODE_SETTING = "api.auth.github.access.mode";
-    private static final String CLIENT_ID_SETTING = "api.auth.github.client.id";
-    private static final String CLIENT_SECRET_SETTING = "api.auth.github.client.secret";
-    private static final String ALLOWED_USERS_SETTING = "api.auth.github.allowed.users";
-    private static final String ALLOWED_ORGS_SETTING = "api.auth.github.allowed.orgs";
-    private static final String HOSTNAME_SETTING = "api.github.domain";
-    private static final String SCHEME_SETTING = "api.github.scheme";
-
-    private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);
-    private static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESSMODE_SETTING);
-    private static final DynamicStringProperty GITHUB_ALLOWED_USERS = ArchaiusUtil.getString(ALLOWED_USERS_SETTING);
-    private static final DynamicStringProperty GITHUB_ALLOWED_ORGS = ArchaiusUtil.getString(ALLOWED_ORGS_SETTING);
+    private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(GithubConstants.CLIENT_ID_SETTING);
 
     @Inject
     JsonMapper jsonMapper;
@@ -69,53 +57,45 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        if (!StringUtils.equals(GithubConstants.GITHUBCONFIG, request.getType())) {
+        if (!StringUtils.equalsIgnoreCase(GithubConstants.CONFIG, request.getType())) {
             return null;
         }
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
-        settingsUtils.changeSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
-        settingsUtils.changeSetting(SCHEME_SETTING, config.get(SCHEME));
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
-        settingsUtils.changeSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
-        if (config.get(CLIENT_SECRET) != null) {
-            settingsUtils.changeSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
-        }
-        settingsUtils.changeSetting(ACCESSMODE_SETTING, config.get(TokenUtils.ACCESSMODE));
-        settingsUtils.changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS)), ","));
-        settingsUtils.changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS)), ","));
-        return currentGithubConfig(config);
+        return updateCurrentConfig(config);
     }
 
     @SuppressWarnings("unchecked")
-    private GithubConfig currentGithubConfig(Map<String, Object> config) {
-        GithubConfig currentConfig = (GithubConfig) listInternal(null, null, null, null);
-        Boolean enabled = currentConfig.getEnabled();
+    public GithubConfig getCurrentConfig(Map<String, Object> config) {
+        if (config == null){
+            config = new HashMap<>();
+        }
+        boolean enabled = SecurityConstants.SECURITY.get();
+        String clientId = GITHUB_CLIENT_ID.get();
+        String accessMode = GithubConstants.ACCESS_MODE.get();
+        String hostname = GithubConstants.GITHUB_HOSTNAME.get();
+        String scheme = GithubConstants.SCHEME.get();
+        List<String> allowedUsers = getAccountNames(fromCommaSeparatedString(GithubConstants.GITHUB_ALLOWED_USERS.get()));
+        List<String> allowedOrgs = getAccountNames(fromCommaSeparatedString(GithubConstants.GITHUB_ALLOWED_ORGS.get()));
         if (config.get(SecurityConstants.ENABLED) != null) {
             enabled = (Boolean) config.get(SecurityConstants.ENABLED);
         }
-        String accessMode = currentConfig.getAccessMode();
         if (config.get(TokenUtils.ACCESSMODE) != null) {
             accessMode = (String) config.get(TokenUtils.ACCESSMODE);
         }
-        String hostname = currentConfig.getHostname();
-        if (config.get(HOSTNAME) != null) {
-            hostname = (String) config.get(HOSTNAME);
+        if (config.get(GithubConstants.HOSTNAME) != null) {
+            hostname = (String) config.get(GithubConstants.HOSTNAME);
         }
-        String scheme = currentConfig.getScheme();
         if (config.get(SCHEME) != null) {
             scheme = (String) config.get(SCHEME);
         }
-        String clientId = currentConfig.getClientId();
         if (config.get(CLIENT_ID) != null) {
             clientId = (String) config.get(CLIENT_ID);
         }
-        List<String> allowedUsers = currentConfig.getAllowedUsers();
-        if (config.get(ALLOWED_USERS) != null) {
-            allowedUsers = (List<String>) config.get(ALLOWED_USERS);
+        if (config.get(GithubConstants.ALLOWED_USERS) != null) {
+            allowedUsers = (List<String>) config.get(GithubConstants.ALLOWED_USERS);
         }
-        List<String> allowedOrgs = currentConfig.getAllowedOrganizations();
-        if (config.get(ALLOWED_ORGS) != null) {
-            allowedOrgs = (List<String>) config.get(ALLOWED_ORGS);
+        if (config.get(GithubConstants.ALLOWED_ORGS) != null) {
+            allowedOrgs = (List<String>) config.get(GithubConstants.ALLOWED_ORGS);
         }
         return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs, hostname, scheme);
     }
@@ -153,14 +133,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        boolean enabled = SecurityConstants.SECURITY.get();
-        String clientId = GITHUB_CLIENT_ID.get();
-        String accessMode = ACCESS_MODE.get();
-        String hostname = GithubConstants.GITHUB_HOSTNAME.get();
-        String scheme = GithubConstants.SCHEME.get();
-        List<String> allowedUsers = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_USERS.get()));
-        List<String> allowedOrgs = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_ORGS.get()));
-        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs, hostname, scheme);
+        return getCurrentConfig(new HashMap<String, Object>());
     }
 
     private List<String> getAccountNames(List<String> accountInfos) {
@@ -189,5 +162,26 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
             strings.add(element);
         }
         return strings;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public AuthConfig updateCurrentConfig(Map<String, Object> config) {
+        settingsUtils.changeSetting(GithubConstants.HOSTNAME_SETTING, config.get(GithubConstants.HOSTNAME));
+        settingsUtils.changeSetting(GithubConstants.SCHEME_SETTING, config.get(SCHEME));
+        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
+        settingsUtils.changeSetting(GithubConstants.CLIENT_ID_SETTING, config.get(CLIENT_ID));
+        if (config.get(CLIENT_SECRET) != null) {
+            settingsUtils.changeSetting(GithubConstants.CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
+        }
+        settingsUtils.changeSetting(GithubConstants.ACCESSMODE_SETTING, config.get(TokenUtils.ACCESSMODE));
+        settingsUtils.changeSetting(GithubConstants.ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(GithubConstants.ALLOWED_USERS)), ","));
+        settingsUtils.changeSetting(GithubConstants.ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(GithubConstants.ALLOWED_ORGS)), ","));
+        return getCurrentConfig(config);
+    }
+
+    @Override
+    public String getName() {
+        return GithubConstants.MANAGER;
     }
 }

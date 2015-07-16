@@ -1,0 +1,13 @@
+{
+  "collectionMethods" : [ ],
+  "resourceFields" : {
+    "role" : {
+      "type" : "enum",
+      "default" : "member",
+      "options" : [
+        "member",
+        "owner"
+      ]
+    }
+  }
+}

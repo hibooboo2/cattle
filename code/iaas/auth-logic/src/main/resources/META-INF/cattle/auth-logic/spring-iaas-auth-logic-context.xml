@@ -13,7 +13,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.cattle.platform.iaas.api.auth.identity.TokenResourceManager" >
-        <property name="tokenHandlers" value="#{extensionManager.list('token.handler')}" />
+        <property name="tokenCreators" value="#{extensionManager.list('token.handler')}" />
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
@@ -22,7 +22,7 @@
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
     </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenHandler" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenCreator" />
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 
@@ -58,7 +58,7 @@
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityTransformationHandler" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapClient" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenHandler" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfigManager" />
 
@@ -67,9 +67,14 @@
         <property name="identitySearchProviders" value="#{extensionManager.map('identity.search.provider')}" />
     </bean>
 
+    <bean class="io.cattle.platform.iaas.api.auth.AuthConfigsManager" >
+        <property name="authConfigManagers" value="#{extensionManager.map('auth.config.manager')}" />
+    </bean>
+
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>
-    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.TokenHandler"/>
+    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider"/>
+    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AuthConfigManager"/>
 </beans>
