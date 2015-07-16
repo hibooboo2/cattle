@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.integration.github.resource;
+package io.cattle.platform.iaas.api.auth.projects;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.ProjectMember;
