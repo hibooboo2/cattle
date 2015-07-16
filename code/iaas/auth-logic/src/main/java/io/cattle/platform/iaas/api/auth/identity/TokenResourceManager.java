@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.iaas.api.auth.integration.github.resource.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenHandler;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;

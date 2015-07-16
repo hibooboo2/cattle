@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.integration.github.resource;
+package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
