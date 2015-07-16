@@ -4,7 +4,7 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -15,9 +15,9 @@ import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.iaas.api.auth.ProjectLock;
+import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integrations.github.resource.Member;
+import io.cattle.platform.iaas.api.auth.integration.github.resource.Member;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -177,9 +177,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public List<Account> getAccessibleProjects(Set<ExternalId> externalIds, boolean isAdmin, Long usingAccount) {
+    public List<Account> getAccessibleProjects(Set<Identity> identities, boolean isAdmin, Long usingAccount) {
         List<Account> projects = new ArrayList<>();
-        if (externalIds == null) {
+        if (identities == null) {
             return projects;
         }
         if (isAdmin) {
@@ -203,9 +203,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         //Condition without caring what the external Ids are and still make one
         //Database call.
         Condition allMembers = DSL.falseCondition();
-        for (ExternalId id : externalIds) {
+        for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
-                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getType()))
+                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.REMOVED.isNull())
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE)));
         }
@@ -241,13 +241,13 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public boolean hasAccessToProject(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIds) {
-        return isProjectMember(projectId, usingAccount, isAdmin, externalIds);
+    public boolean hasAccessToProject(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
+        return isProjectMember(projectId, usingAccount, isAdmin, identities);
     }
 
     @Override
-    public boolean isProjectOwner(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIds) {
-        if (externalIds == null) {
+    public boolean isProjectOwner(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
+        if (identities == null) {
             return false;
         }
         if (isAdmin) {
@@ -258,9 +258,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         }
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
-        for (ExternalId id : externalIds) {
+        for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
-                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getType()))
+                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.ROLE.eq(ProjectConstants.OWNER))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
@@ -270,8 +270,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         return !projectMembers.isEmpty();
     }
 
-    public boolean isProjectMember(long projectId, Long usingAccount, boolean isAdmin, Set<ExternalId> externalIds) {
-        if (externalIds == null) {
+    public boolean isProjectMember(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
+        if (identities == null) {
             return false;
         }
         if ((usingAccount != null && usingAccount.equals(projectId)) || isAdmin) {
@@ -282,9 +282,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         roles.add(ProjectConstants.MEMBER);
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
-        for (ExternalId id : externalIds) {
+        for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
-                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getType()))
+                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.ROLE.in(roles))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
@@ -343,14 +343,14 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public void ensureAllProjectsHaveNonRancherIdMembers(ExternalId externalId) {
+    public void ensureAllProjectsHaveNonRancherIdMembers(Identity identity) {
         //This operation is expensive if there are alot of projects and members however this is
         //only called when auth is being turned on. In most cases this will only be called once.
-        Member newMember = new Member(externalId, ProjectConstants.OWNER);
-        Set<ExternalId> externalIds = new HashSet<>();
+        Member newMember = new Member(identity, ProjectConstants.OWNER);
+        Set<Identity> identities = new HashSet<>();
         Account account = getAdminAccount();
-        externalIds.add(new ExternalId(String.valueOf(account.getId()), null, null, ProjectConstants.RANCHER_ID));
-        List<Account> allProjects = getAccessibleProjects(externalIds, true, null);
+        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId())));
+        List<Account> allProjects = getAccessibleProjects(identities, true, null);
         for (Account project : allProjects) {
             List<? extends ProjectMember> members = getActiveProjectMembers(project.getId());
             boolean hasNonRancherMember = false;
@@ -382,11 +382,10 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         }
 
         objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, member, null);
-        return;
     }
 
     @Override
-    public boolean hasAccessToAnyProject(Set<ExternalId> externalIds, boolean isAdmin, Long usingAccount) {
-        return !getAccessibleProjects(externalIds, isAdmin, usingAccount).isEmpty();
+    public boolean hasAccessToAnyProject(Set<Identity> identities, boolean isAdmin, Long usingAccount) {
+        return !getAccessibleProjects(identities, isAdmin, usingAccount).isEmpty();
     }
 }

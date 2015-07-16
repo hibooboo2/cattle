@@ -6,6 +6,7 @@ public class ProjectConstants {
     public static final String PROJECT_DEFAULT_NAME = " Default";
 
     public static final String RANCHER_ID = "rancher_id";
+    public static final String NAME = "rancher";
 
     public static final String OWNER = "owner";
     public static final String MEMBER = "member";
