@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integration.github.resource.Member;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;

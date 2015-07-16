@@ -17,7 +17,7 @@ import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integration.github.resource.Member;
+import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;

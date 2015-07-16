@@ -3,7 +3,7 @@ package io.cattle.platform.iaas.api.auth.dao;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.iaas.api.auth.integration.github.resource.Member;
+import io.cattle.platform.iaas.api.auth.projects.Member;
 
 import java.util.List;
 import java.util.Set;
