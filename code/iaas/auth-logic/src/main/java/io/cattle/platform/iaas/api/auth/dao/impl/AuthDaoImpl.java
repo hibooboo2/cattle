@@ -312,8 +312,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 }
                 Condition allMembers = DSL.falseCondition();
                 for (Member member : delete) {
-                    allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(member.getExternalId())
-                            .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(member.getExternalIdType()))
+                    allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(member.getIdentity().getExternalId())
+                            .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(member.getIdentity().getKind()))
                             .and(PROJECT_MEMBER.PROJECT_ID.eq(project.getId()))
                             .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE)));
                 }
@@ -335,9 +335,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         Map<Object, Object> properties = new HashMap<>();
         properties.put(PROJECT_MEMBER.PROJECT_ID, project.getId());
         properties.put(PROJECT_MEMBER.ACCOUNT_ID, project.getId());
-        properties.put(PROJECT_MEMBER.NAME, member.getName());
-        properties.put(PROJECT_MEMBER.EXTERNAL_ID, member.getExternalId());
-        properties.put(PROJECT_MEMBER.EXTERNAL_ID_TYPE, member.getExternalIdType());
+        properties.put(PROJECT_MEMBER.NAME, member.getIdentity().getName());
+        properties.put(PROJECT_MEMBER.EXTERNAL_ID, member.getIdentity().getExternalId());
+        properties.put(PROJECT_MEMBER.EXTERNAL_ID_TYPE, member.getIdentity().getKind());
         properties.put(PROJECT_MEMBER.ROLE, member.getRole());
         return resourceDao.create(ProjectMember.class, objectManager.convertToPropertiesFor(ProjectMember.class, properties));
     }

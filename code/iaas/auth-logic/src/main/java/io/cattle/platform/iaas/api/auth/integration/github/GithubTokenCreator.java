@@ -11,7 +11,7 @@ import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccoun
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
 import io.cattle.platform.iaas.api.auth.identity.Token;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenHandler;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -34,7 +34,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import com.netflix.config.DynamicLongProperty;
 
-public class GithubTokenHandler implements TokenHandler {
+public class GithubTokenCreator implements TokenCreator {
 
     private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     @Inject
@@ -117,7 +117,7 @@ public class GithubTokenHandler implements TokenHandler {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, accountId, user.getId());
+        return new Token(jwt, accountId, user, new ArrayList<>(identities), SecurityConstants.SECURITY.get());
     }
 
     @Override

@@ -176,6 +176,10 @@
         "logConfig.driver" : "cr",
         "logConfig.config" : "cr",
 
+        "member" : "cr",
+        "member.role" : "cr",
+        "member.identity" : "cr",
+
         "mount" : "r",
         "mount.instanceId" : "r",
         "mount.path" : "r",

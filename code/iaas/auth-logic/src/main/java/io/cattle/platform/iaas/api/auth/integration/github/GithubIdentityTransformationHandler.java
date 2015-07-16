@@ -27,7 +27,7 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
     @Inject
     GithubUtils githubUtils;
     @Inject
-    GithubTokenHandler githubTokenHandler;
+    GithubTokenCreator githubTokenHandler;
     @Inject
     GithubClient githubClient;
 

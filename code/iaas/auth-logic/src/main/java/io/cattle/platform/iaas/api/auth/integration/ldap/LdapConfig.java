@@ -1,10 +1,11 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
+import io.cattle.platform.iaas.api.auth.integration.interfaces.AuthConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(name = LdapConstants.LDAPCONFIG)
-public class LdapConfig {
+public class LdapConfig implements AuthConfig{
 
     private boolean enabled;
     private String server;
@@ -50,5 +51,15 @@ public class LdapConfig {
     @Field(nullable = true, defaultValue = "unrestricted")
     public String getAccessMode() {
         return accessMode;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public String getName() {
+        return LdapConstants.LDAPCONFIG;
     }
 }
