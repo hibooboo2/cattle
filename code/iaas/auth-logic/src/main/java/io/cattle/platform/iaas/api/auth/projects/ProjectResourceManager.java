@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.projects;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -11,7 +11,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integrations.github.resource.Member;
+import io.cattle.platform.iaas.api.auth.integration.github.resource.Member;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -99,7 +99,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         } else {
             isAdmin = false;
         }
-        List<Account> projects = authDao.getAccessibleProjects(policy.getExternalIds(),
+        List<Account> projects = authDao.getAccessibleProjects(policy.getIdentities(),
                 isAdmin, policy.getAccountId());
         List<Account> projectsFiltered = new ArrayList<>();
         for (Account project : projects) {
@@ -113,11 +113,11 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             return null;
         }
         if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             return null;
         }
         boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
-                .getExternalIds());
+                .getIdentities());
         if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) && !isOwner) {
             return null;
         }
@@ -155,9 +155,9 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     public Account createProjectForUser(Account account) {
         Account project = authDao.createProject(account.getName() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
-        ExternalId externalId = new ExternalId(account.getExternalId(), account.getName());
+        Identity identity = new Identity(account.getExternalIdType(), account.getExternalId(), account.getName());
         //TODO: This Needs to changed (To reflect externalIdtype of account.)
-        authDao.createProjectMember(project, new Member(externalId, ProjectConstants.OWNER));
+        authDao.createProjectMember(project, new Member(identity, ProjectConstants.OWNER));
         return project;
     }
 
@@ -171,7 +171,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
         if (!authDao.isProjectOwner(Long.valueOf(id), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         try {
@@ -203,7 +203,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Account project = (Account) obj;
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
             return super.updateInternal(type, id, obj, apiRequest);
         } else {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to update the name or description.", null);

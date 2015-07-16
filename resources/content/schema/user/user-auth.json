@@ -138,6 +138,13 @@
         "hostAccess.token" : "r",
         "hostAccess.url" : "r",
 
+        "identity": "r",
+        "identity.name": "r",
+        "identity.externalId": "r",
+        "identity.kind": "r",
+        "identity.profilePicture": "r",
+        "identity.profileUrl": "r",
+
         "image" : "r",
 
         "instanceConsoleInput" : "r",

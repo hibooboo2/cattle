@@ -1,9 +1,9 @@
 package io.cattle.platform.iaas.api.request.handler;
 
-import io.cattle.platform.iaas.api.auth.integrations.github.GithubClient;
-import io.cattle.platform.iaas.api.auth.integrations.github.GithubClientEndpoints;
-import io.cattle.platform.iaas.api.auth.integrations.github.GithubUtils;
-import io.cattle.platform.iaas.api.auth.integrations.github.constants.GithubConstants;
+import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
+import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClientEndpoints;
+import io.cattle.platform.iaas.api.auth.integration.github.GithubUtils;
+import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
