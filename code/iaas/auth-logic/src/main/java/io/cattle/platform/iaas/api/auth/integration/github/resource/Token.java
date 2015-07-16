@@ -4,45 +4,18 @@ import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-import java.util.List;
-
 @Type(name = TokenUtils.TOKEN)
 public class Token {
 
     private final String jwt;
-    private final String hostname;
-    private final String user;
-    private final List<String> orgs;
-    private final List<TeamAccountInfo> teams;
-    private final Boolean security;
-    private final String clientId;
-    private final String userType;
     private final String accountId;
+    private final String identityId;
     private String code;
 
-    public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType,
-                 String accountId) {
+    public Token(String jwt, String accountId, String identityId) {
         this.jwt = jwt;
-        this.user = username;
-        this.hostname = null;
-        this.orgs = orgs;
-        this.teams = teams;
-        this.security = security;
-        this.clientId = clientId;
-        this.userType = userType;
+        this.identityId = identityId;
         this.accountId = accountId;
-    }
-
-    public Token(Boolean security, String clientId, String hostName) {
-        this.jwt = null;
-        this.user = null;
-        this.orgs = null;
-        this.teams = null;
-        this.security = security;
-        this.clientId = clientId;
-        this.userType = null;
-        this.accountId = null;
-        this.hostname = hostName;
     }
 
     @Field(nullable = true)
@@ -61,42 +34,12 @@ public class Token {
     }
 
     @Field(nullable = true)
-    public String getUser() {
-        return user;
-    }
-
-    @Field(nullable = true)
-    public List<String> getOrgs() {
-        return orgs;
-    }
-
-    @Field(nullable = true)
-    public List<TeamAccountInfo> getTeams() {
-        return teams;
-    }
-
-    @Field(nullable = true)
-    public Boolean getSecurity() {
-        return security;
-    }
-
-    @Field(nullable = true)
-    public String getClientId() {
-        return clientId;
-    }
-
-    @Field(nullable = true)
-    public String getUserType() {
-        return userType;
-    }
-
-    @Field(nullable = true)
     public String getAccountId() {
         return accountId;
     }
 
     @Field(nullable = true)
-    public String getHostname() {
-        return hostname;
+    public String getIdentityId() {
+        return identityId;
     }
 }

@@ -7,6 +7,6 @@ import java.io.IOException;
 
 public interface TokenHandler {
 
-    public Token getToken(ApiRequest request) throws IOException;
+    Token createToken(ApiRequest request) throws IOException;
 
 }
