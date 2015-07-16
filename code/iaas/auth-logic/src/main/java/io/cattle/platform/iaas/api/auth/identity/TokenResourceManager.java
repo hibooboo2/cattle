@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenHandler;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
@@ -47,18 +46,18 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             return null;
         }
         try {
-            return getToken(request);
+            return createToken(request);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Token getToken(ApiRequest request) throws IOException {
+    private Token createToken(ApiRequest request) throws IOException {
         Token token = null;
         List<ClientVisibleException> exceptions = new ArrayList<>();
         for (TokenHandler tokenHandler : tokenHandlers) {
             try {
-                token = tokenHandler.getToken(request);
+                token = tokenHandler.createToken(request);
             } catch (ClientVisibleException e) {
                 exceptions.add(e);
             }
@@ -79,6 +78,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(SecurityConstants.SECURITY.get(), GITHUB_CLIENT_ID.get(), GITHUB_HOSTNAME.get());
+        return new Token(null, null, null);
     }
 }

@@ -26,9 +26,9 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 
-    <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.integration.rancher.BasicAuthImpl" />
-    <bean id="AdminAuth" class="io.cattle.platform.iaas.api.auth.integration.rancher.AdminAuthLookUp" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.rancher.HeaderAuthLookup" >
+    <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl" />
+    <bean id="AdminAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.AdminAuthLookUp" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.HeaderAuthLookup" >
         <property name="adminLookup" ref="BasicAuth" />
         <property name="adminAuthProvider" ref="DefaultAuthorizationProvider" />
     </bean>
@@ -45,14 +45,14 @@
 	<bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubConfigManager" />
 
 	
-    <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.integration.rancher.TokenAccountLookup" />
+    <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAccountLookup" />
     <bean id="GithubAuth" class="io.cattle.platform.iaas.api.auth.integration.github.GithubOAuthImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentitySearchProvider"/>
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient"/>
 
     <bean class="io.cattle.platform.iaas.api.request.handler.GithubProxy" />
     <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.rancher.RancherIdentityTransformationHandler" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentityTransformationHandler" />
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl" />

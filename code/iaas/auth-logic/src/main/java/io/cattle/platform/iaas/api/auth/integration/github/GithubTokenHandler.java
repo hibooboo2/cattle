@@ -64,8 +64,9 @@ public class GithubTokenHandler implements TokenHandler {
         Set<Identity> identities = new HashSet<>();
 
         idList.add(userAccountInfo.getAccountId());
-        identities.add(new Identity(GithubConstants.USER_SCOPE, userAccountInfo.getAccountId(),
-                userAccountInfo.getAccountName(), userAccountInfo.getProfileUrl(), userAccountInfo.getProfilePicture()));
+        Identity user = new Identity(GithubConstants.USER_SCOPE, userAccountInfo.getAccountId(),
+                userAccountInfo.getAccountName(), userAccountInfo.getProfileUrl(), userAccountInfo.getProfilePicture());
+        identities.add(user);
 
         for (GithubAccountInfo info : orgAccountInfo) {
             idList.add(info.getAccountId());
@@ -116,12 +117,11 @@ public class GithubTokenHandler implements TokenHandler {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null,
-                account.getKind(), accountId);
+        return new Token(jwt, accountId, user.getId());
     }
 
     @Override
-    public Token getToken(ApiRequest request) throws IOException {
+    public Token createToken(ApiRequest request) throws IOException {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(GithubConstants.GITHUB_REQUEST_CODE));
         String accessToken = githubIdentitySearchProvider.getAccessToken(code);

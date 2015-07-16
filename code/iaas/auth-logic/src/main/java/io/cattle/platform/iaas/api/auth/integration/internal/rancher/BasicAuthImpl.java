@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.integration.rancher;
+package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;

@@ -59,6 +59,16 @@ public class LdapTokenHandler implements TokenHandler {
         }
         Account account;
         Set<Identity> identities = ldapClient.getIdentities(username, password);
+        Identity gotIdentity = null;
+        for (Identity identity: identities){
+            if (identity.getKind().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+                gotIdentity = identity;
+                break;
+            }
+        }
+        if (gotIdentity == null){
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+        }
         String fullUserName = ldapClient.getUserExternalId(username);
         boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
         if (SecurityConstants.SECURITY.get()) {
@@ -91,12 +101,11 @@ public class LdapTokenHandler implements TokenHandler {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, fullUserName, null, null, null, null,
-                account.getKind(), accountId);
+        return new Token(jwt, accountId, gotIdentity.getId());
     }
 
     @Override
-    public Token getToken(ApiRequest request) throws IOException {
+    public Token createToken(ApiRequest request) throws IOException {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(GithubConstants.GITHUB_REQUEST_CODE));
         String[] split = code.split(":");
