@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.naming.Context;
+import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.LdapName;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -27,20 +29,20 @@ import org.apache.commons.logging.LogFactory;
 
 import com.sun.jndi.ldap.LdapCtxFactory;
 
-public class LdapClient extends AbstractIdentitySearchProvider {
+public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
-    private static final Log logger = LogFactory.getLog(LdapClient.class);
+    private static final Log logger = LogFactory.getLog(LdapIdentitySearchProvider.class);
     @Inject
     LdapUtils ldapUtils;
 
-    private DirContext login(String username, String password) {
+    private LdapContext login(String username, String password) {
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_PRINCIPAL, username);
         props.put(Context.SECURITY_CREDENTIALS, password);
-        DirContext context;
+        LdapContext context;
 
         try {
-            context = LdapCtxFactory.getLdapCtxInstance("ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
+            context = (LdapContext) LdapCtxFactory.getLdapCtxInstance("ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
             return context;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP / get account information: " + e);
@@ -48,23 +50,24 @@ public class LdapClient extends AbstractIdentitySearchProvider {
         }
     }
 
-    private SearchResult userRecord(DirContext context, String domain, String samName) {
+    private SearchResult userRecord(LdapContext context, String domain, String name) {
         SearchControls controls = new SearchControls();
+        name = getSAMname(name);
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> renum;
         try {
-            renum = context.search(toDC(domain), "(sAMAccountName=" + samName + ")", controls);
+            renum = context.search(toDC(domain), "(sAMAccountName=" + name + ")", controls);
         } catch (NamingException e) {
-            logger.error("Failed to search: " + samName, e);
+            logger.error("Failed to search: " + name, e);
             return null;
         }
         try {
             if (!renum.hasMore()) {
-                logger.info("Cannot locate user information for " + samName);
+                logger.info("Cannot locate user information for " + name);
                 return null;
             }
         } catch (NamingException e) {
-            logger.error("Common name: " + samName + " is not valid.", e);
+            logger.error("Common name: " + name + " is not valid.", e);
             return null;
         }
         SearchResult result;
@@ -75,24 +78,26 @@ public class LdapClient extends AbstractIdentitySearchProvider {
                 return null;
             }
         } catch (NamingException e) {
-            logger.error("No results. when searching. " + samName);
+            logger.error("No results. when searching. " + name);
             return null;
         }
         return result;
     }
 
-    private Set<Identity> getGroups(SearchResult result, DirContext context) {
+    private Set<Identity> getGroups(SearchResult result, LdapContext context) {
         Set<Identity> groups = new HashSet<>();
         if (result == null) {
             return groups;
         }
+        String cn = result.getNameInNamespace();
         Attribute memberOf = result.getAttributes().get("memberOf");
         try {
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
                     Attributes attributes = context.getAttributes(memberOf.get(i).toString(), new String[]{"CN"});
-                    Attribute attribute = attributes.get("CN");
-                    groups.add(new Identity(LdapConstants.GROUP_SCOPE, memberOf.get(i).toString(), attribute.get().toString()));
+                    Attribute commonName = attributes.get("CN");
+                    Attribute samName = attributes.get("CN");
+                    groups.add(new Identity(LdapConstants.GROUP_SCOPE, memberOf.get(i).toString(), commonName.get().toString()));
                 }
             }
         } catch (NamingException e) {
@@ -116,15 +121,16 @@ public class LdapClient extends AbstractIdentitySearchProvider {
         if (!isConfigured()) {
             return new HashSet<>();
         }
-        DirContext context = login(getUserExternalId(username), password);
+        LdapContext context = login(getUserExternalId(username), password);
         SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), username);
-        Set<Identity> groups = getGroups(result, context);
+        Set<Identity> identities = getGroups(result, context);
+        identities.add(new Identity(LdapConstants.USER_SCOPE, getUserExternalId(username), username));
         try {
             context.close();
         } catch (NamingException e) {
             logger.error("Failed to close context.", e);
         }
-        return groups;
+        return identities;
     }
 
     public String getUserExternalId(String username) {
@@ -138,37 +144,66 @@ public class LdapClient extends AbstractIdentitySearchProvider {
         }
     }
 
+    public String getSAMname(String username) {
+        if (!isConfigured()) {
+            return null;
+        }
+        if (username.contains("\\")) {
+            return username.split("\\\\", 2)[1];
+        } else {
+            return username;
+        }
+    }
+
+    @Override
     public boolean isConfigured() {
         return StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
                 StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
                 StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get());
+                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
+                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
+                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
     }
 
     @Override
     public List<Identity> searchIdentities(String name, String scope) {
-        String accessToken = ldapUtils.getAccessToken();
-        String[] split = accessToken.split(":", 2);
-        Set<Identity> identities = getIdentities(split[0], split[1]);
-        List<Identity> identitiesToReturn = new ArrayList<>();
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
         switch (scope) {
             case LdapConstants.USER_SCOPE:
-                addIds(LdapConstants.USER_SCOPE, identities, identitiesToReturn);
-                break;
+                return searchUser(name);
             case LdapConstants.GROUP_SCOPE:
-                addIds(LdapConstants.USER_SCOPE, identities, identitiesToReturn);
-                break;
+                return searchGroup(name);
             default:
-                break;
+                return new ArrayList<>();
         }
-        return identitiesToReturn;
     }
 
-    private void addIds(String scope, Set<Identity> identities, List<Identity> identitiesToReturn) {
-        for (Identity identity : identities) {
-            if (identity.getKind().equalsIgnoreCase(scope)) {
-                identitiesToReturn.add(identity);
+    private List<Identity> searchGroup(String name) {
+        return new ArrayList<>();
+    }
+
+    private List<Identity> searchUser(String name) {
+        try {
+            if (!isConfigured()){
+                return new ArrayList<>();
             }
+            LdapContext context = getServiceContext();
+            SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), name);
+            if (result == null) {
+                return new ArrayList<>();
+            }
+            Attributes attributes = result.getAttributes();
+            String accountName = (String) attributes.get("displayname").get();
+            String externalId = (String) attributes.get("distinguishedname").get();
+            Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
+            List<Identity> identities = new ArrayList<>();
+            identities.add(identity);
+            return identities;
+        } catch (NamingException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -176,7 +211,7 @@ public class LdapClient extends AbstractIdentitySearchProvider {
     public Identity getIdentity(String id, String scope) {
         switch (scope) {
             case LdapConstants.USER_SCOPE:
-                return getGroup(id);
+                return getUser(id);
             case LdapConstants.GROUP_SCOPE:
                 return getGroup(id);
             default:
@@ -185,9 +220,14 @@ public class LdapClient extends AbstractIdentitySearchProvider {
     }
 
     private Identity getGroup(String id) {
+        return new Identity(LdapConstants.GROUP_SCOPE, id, "NOT YET MADE PHANTOM>!>!?");
+    }
+
+    private Identity getUser(String id) {
         try {
-            String[] split = ldapUtils.getAccessToken().split(":", 2);
-            DirContext context = login(getUserExternalId(split[0]), split[1]);
+            LdapContext context = getServiceContext();
+            context = (LdapContext) context.lookup(new LdapName(id));
+            NamingEnumeration<NameClassPair> x = context.list(id);
             SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), id);
             Attributes attributes = result.getAttributes();
             String accountName = (String) attributes.get("displayname").get();
@@ -201,10 +241,6 @@ public class LdapClient extends AbstractIdentitySearchProvider {
 
     }
 
-    private Identity getUser(String id) {
-        return null;
-    }
-
     @Override
     public List<String> scopesProvided() {
         return Arrays.asList(LdapConstants.SCOPES);
@@ -213,5 +249,13 @@ public class LdapClient extends AbstractIdentitySearchProvider {
     @Override
     public String getName() {
         return LdapConstants.NAME;
+    }
+
+    public LdapContext getServiceContext() {
+        if (isConfigured()) {
+            return login(getUserExternalId(LdapConstants.SERVICEACCOUNT_USER.get()), LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+        } else {
+            return null;
+        }
     }
 }

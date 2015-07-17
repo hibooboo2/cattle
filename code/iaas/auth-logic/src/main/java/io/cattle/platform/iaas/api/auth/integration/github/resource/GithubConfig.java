@@ -71,7 +71,7 @@ public class GithubConfig implements AuthConfig{
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isConfigured() {
         return enabled;
     }
 

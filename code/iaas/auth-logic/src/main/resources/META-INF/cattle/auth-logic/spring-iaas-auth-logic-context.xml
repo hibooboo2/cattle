@@ -57,7 +57,7 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityTransformationHandler" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapClient" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentitySearchProvider" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfigManager" />

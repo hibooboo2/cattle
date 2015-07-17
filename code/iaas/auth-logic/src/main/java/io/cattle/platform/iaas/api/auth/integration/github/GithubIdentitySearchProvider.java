@@ -39,7 +39,7 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
     public String getAccessToken(String code) throws IOException {
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
-        if (!githubClient.githubConfigured()) {
+        if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.CONFIG, "No Github Client id and secret found.", null);
         }
 
@@ -67,6 +67,9 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
 
     @Override
     public List<Identity> searchIdentities(String name, String scope) {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
         HttpResponse res;
         try {
             res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + name).addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
@@ -89,6 +92,9 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
 
     @Override
     public Identity getIdentity(String id, String scope) {
+        if (!isConfigured()){
+            return null;
+        }
         switch (scope) {
             case GithubConstants.USER_SCOPE:
                 GithubAccountInfo user = getUserOrgById(id);
@@ -106,6 +112,9 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
     }
 
     private Identity getTeamById(String id) {
+        if (!isConfigured()) {
+            return null;
+        }
         String gitHubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
         try {
             if (StringUtils.isEmpty(id)) {
@@ -161,11 +170,19 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
 
     @Override
     public List<String> scopesProvided() {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
         return Arrays.asList(GithubConstants.SCOPES);
     }
 
     @Override
+    public boolean isConfigured() {
+        return githubClient.githubConfigured();
+    }
+
+    @Override
     public String getName() {
-        return GithubConstants.NAME;
+        return GithubConstants.SEARCH_PROVIDER;
     }
 }

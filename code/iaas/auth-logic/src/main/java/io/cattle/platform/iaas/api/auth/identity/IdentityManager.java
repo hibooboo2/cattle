@@ -9,6 +9,7 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +33,8 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         if (criteria.get("id") != null) {
             return Collections.singletonList(getIdentity((String) criteria.get("id")));
         }
-        Map<String, Object> x = ApiContext.getContext().getApiRequest().getRequestParams();
-        if (x.containsKey("name")) {
-            String search = String.valueOf(x.get("name"));
+        if (criteria.containsKey("name")) {
+            String search = criteria.get("name").toString();
             return searchIdentites(search);
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();

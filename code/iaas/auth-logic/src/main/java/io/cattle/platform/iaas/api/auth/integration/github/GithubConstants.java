@@ -58,5 +58,7 @@ public class GithubConstants {
     public static final DynamicStringProperty GITHUB_ALLOWED_USERS = ArchaiusUtil.getString(ALLOWED_USERS_SETTING);
 
     public static final String[] SCOPES = new String[]{USER_SCOPE, ORG_SCOPE, TEAM_SCOPE};
-    public static final String MANAGER = NAME + "manager";
+    public static final String MANAGER = NAME + "Manager";
+    public static final String SEARCH_PROVIDER = NAME + "Provider";
+    public static final String TOKEN_CREATOR = NAME + "TokenCreator";
 }

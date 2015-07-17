@@ -109,6 +109,9 @@
         "ldapconfig.loginDomain" : "cr",
         "ldapconfig.domain" : "cr",
         "ldapconfig.accessMode" : "cr",
+        "ldapconfig.name" : "r",
+        "ldapconfig.serviceAccountUsername" : "cr",
+        "ldapconfig.serviceAccountPassword" : "cr",
 
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",
