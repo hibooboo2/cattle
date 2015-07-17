@@ -18,7 +18,9 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +55,10 @@ public class GithubTokenCreator implements TokenCreator {
     private GithubIdentitySearchProvider githubIdentitySearchProvider;
 
     public Token getGithubToken(String accessToken) throws IOException {
+        if (!isConfigured()) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.CONFIG, "No Github Client id and secret found.", null);
+        }
+
         List<String> idList = new ArrayList<>();
         List<String> orgNames = new ArrayList<>();
         List<String> teamIds = new ArrayList<>();
@@ -129,4 +135,13 @@ public class GithubTokenCreator implements TokenCreator {
     }
 
 
+    @Override
+    public boolean isConfigured() {
+        return githubClient.githubConfigured();
+    }
+
+    @Override
+    public String getName() {
+        return GithubConstants.TOKEN_CREATOR;
+    }
 }

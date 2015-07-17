@@ -23,7 +23,7 @@ import javax.servlet.http.Cookie;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class TokenUtils {
+public abstract class TokenUtils  {
 
     public static final String ACCESSMODE = "accessMode";
     public static final String TOKEN = "token";
@@ -131,6 +131,7 @@ public abstract class TokenUtils {
                 if (cookie.getName().equalsIgnoreCase(TOKEN)
                         && StringUtils.isNotBlank(cookie.getValue())) {
                     jwt = cookie.getValue();
+                    break;
                 }
             }
         }

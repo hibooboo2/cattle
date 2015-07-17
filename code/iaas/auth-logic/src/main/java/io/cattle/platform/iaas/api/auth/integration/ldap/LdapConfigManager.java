@@ -34,7 +34,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
     @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        if (!StringUtils.equals(LdapConstants.LDAPCONFIG, request.getType())) {
+        if (!StringUtils.equals(LdapConstants.CONFIG, request.getType())) {
             return null;
         }
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
@@ -43,6 +43,8 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         settingsUtils.changeSetting(LdapConstants.SERVER_SETTING, config.get(LdapConstants.SERVER));
         settingsUtils.changeSetting(LdapConstants.LOGIN_DOMAIN_SETTING, config.get(LdapConstants.LOGIN_DOMAIN));
         settingsUtils.changeSetting(LdapConstants.PORT_SETTING, config.get(LdapConstants.PORT));
+        settingsUtils.changeSetting(LdapConstants.SERIVCEACCOUNTUSERNAME_SETTING, config.get(LdapConstants.SERVICEACCOUNTUSERNAME));
+        settingsUtils.changeSetting(LdapConstants.SERVICEACCOUNTPASSWORD_SETTING, config.get(LdapConstants.SERVICEACCOUNTPASSWORD));
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
         return currentLdapConfig(config);
     }
@@ -66,6 +68,14 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         if (config.get(LdapConstants.ACCESSMODE) != null) {
             loginDomain = (String) config.get(LdapConstants.ACCESSMODE);
         }
+        String serviceAccountUsername = currentConfig.getServiceAccountUsername();
+        if (config.get(LdapConstants.SERVICEACCOUNTUSERNAME) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICEACCOUNTUSERNAME);
+        }
+        String serviceAccountPassword = currentConfig.getServiceAccountPassword();
+        if (config.get(LdapConstants.SERVICEACCOUNTPASSWORD) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICEACCOUNTPASSWORD);
+        }
         int port = currentConfig.getPort();
         if (config.get(LdapConstants.PORT) != null) {
             port = (int) (long) config.get(LdapConstants.PORT);
@@ -74,7 +84,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         if (config.get(SecurityConstants.ENABLED) != null) {
             enabled = (Boolean) config.get(SecurityConstants.ENABLED);
         }
-        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode);
+        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword);
     }
 
     @Override
@@ -85,12 +95,14 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         String loginDomain = LdapConstants.LDAP_LOGIN_DOMAIN.get();
         String domain = LdapConstants.LDAP_DOMAIN.get();
         String accessMode = LdapConstants.ACCESS_MODE.get();
+        String serviceAccountPassword = LdapConstants.SERVICEACCOUNT_PASSWORD.get();
+        String serviceAccountUsername = LdapConstants.SERVICEACCOUNT_USER.get();
         int port;
         if (LdapConstants.LDAP_PORT.get() == null) {
             port = 389;
         } else {
             port = Integer.valueOf(LdapConstants.LDAP_PORT.get());
         }
-        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode);
+        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword);
     }
 }

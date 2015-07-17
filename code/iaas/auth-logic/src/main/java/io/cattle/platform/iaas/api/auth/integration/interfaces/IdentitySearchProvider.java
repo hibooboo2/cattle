@@ -1,11 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.interfaces;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.util.type.Named;
 
 import java.util.List;
 
-public interface IdentitySearchProvider extends Named {
+public interface IdentitySearchProvider extends Configurable {
 
     List<Identity> searchIdentities(String name);
 

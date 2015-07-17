@@ -10,7 +10,7 @@ import javax.inject.Inject;
 public class LdapIdentityTransformationHandler implements IdentityTransformationHandler {
 
     @Inject
-    LdapClient ldapClient;
+    LdapIdentitySearchProvider ldapIdentitySearchProvider;
 
     @Inject
     LdapUtils ldapUtils;

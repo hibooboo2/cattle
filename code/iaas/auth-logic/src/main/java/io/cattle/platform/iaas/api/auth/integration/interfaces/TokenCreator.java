@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
 
-public interface TokenCreator {
+public interface TokenCreator extends Configurable{
 
     Token createToken(ApiRequest request) throws IOException;
 
