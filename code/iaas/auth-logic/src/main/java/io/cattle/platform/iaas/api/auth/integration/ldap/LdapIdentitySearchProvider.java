@@ -195,7 +195,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
                 return new ArrayList<>();
             }
             Attributes attributes = result.getAttributes();
-            String accountName = (String) attributes.get("displayname").get();
+            String accountName = (String) attributes.get("name").get();
             String externalId = (String) attributes.get("distinguishedname").get();
             Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
             List<Identity> identities = new ArrayList<>();
