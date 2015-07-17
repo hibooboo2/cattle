@@ -1,13 +1,9 @@
 {
-  "resourceFields": {
-    "kind": {
-      "kind": "enum",
-      "default": "rancher_id",
-      "options": [
-        "github_user",
-        "github_org",
-        "github_team",
-        "rancher_id"
+  "collectionFilters": {
+    "name": {
+      "modifiers": [
+        "eq",
+        "like"
       ]
     }
   }
