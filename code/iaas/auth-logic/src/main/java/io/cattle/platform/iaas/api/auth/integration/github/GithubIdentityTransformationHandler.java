@@ -27,7 +27,7 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
     @Inject
     GithubUtils githubUtils;
     @Inject
-    GithubTokenCreator githubTokenHandler;
+    GithubTokenCreator githubTokenCreator;
     @Inject
     GithubClient githubClient;
 
@@ -80,7 +80,7 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
         if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken)) {
             try {
-                jwt = ProjectConstants.AUTH_TYPE + githubTokenHandler.getGithubToken(accessToken).getJwt();
+                jwt = ProjectConstants.AUTH_TYPE + githubTokenCreator.getGithubToken(accessToken).getJwt();
             } catch (ClientVisibleException e) {
                 if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
                         !e.getDetail().contains("401")) {

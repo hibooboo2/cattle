@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -75,6 +76,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(SecurityConstants.SECURITY.get());
+        return new Token(SecurityConstants.SECURITY.get(), GithubConstants.GITHUB_CLIENT_ID.get(), GithubConstants.GITHUB_HOSTNAME.get());
     }
 }

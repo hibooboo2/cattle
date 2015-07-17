@@ -1,29 +1,77 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
-import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
-import io.github.ibuildthecloud.gdapi.annotation.Field;
-import io.github.ibuildthecloud.gdapi.annotation.Type;
+        import io.cattle.platform.api.auth.Identity;
+        import io.cattle.platform.iaas.api.auth.TokenUtils;
+        import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
+        import io.github.ibuildthecloud.gdapi.annotation.Field;
+        import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-import java.util.List;
+        import java.util.List;
 
 @Type(name = TokenUtils.TOKEN)
 public class Token {
 
     private final String jwt;
+    private final String hostname;
+    private String code;
+    private final String user;
+    private final List<String> orgs;
+    private final List<TeamAccountInfo> teams;
+    private final Boolean security;
+    private final String clientId;
+    private final String userType;
+
     private final String accountId;
-    private final Identity user;
+    private final Identity userIdentity;
     private final boolean enabled;
     private final List<Identity> identities;
-    private String code;
 
-    public Token(String jwt, String accountId, Identity user, List<Identity> identities, boolean enabled) {
+    public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType,
+                 String accountId) {
         this.jwt = jwt;
-        this.user = user;
+        this.user = username;
+        this.hostname = null;
+        this.orgs = orgs;
+        this.teams = teams;
+        this.security = security;
+        this.clientId = clientId;
+        this.userType = userType;
+        this.accountId = accountId;
+        this.userIdentity = null;
+        enabled = this.security;
+        identities = null;
+
+    }
+
+    public Token(Boolean security, String clientId, String hostName) {
+        this.jwt = null;
+        this.user = null;
+        this.orgs = null;
+        this.teams = null;
+        this.security = security;
+        this.clientId = clientId;
+        this.userType = null;
+        this.accountId = null;
+        this.hostname = hostName;
+        this.userIdentity = null;
+        enabled = this.security;
+        identities = null;
+    }
+
+    public Token(String jwt, String accountId, Identity userIdentity, List<Identity> identities, boolean enabled) {
+        this.jwt = jwt;
+        this.userIdentity = userIdentity;
         this.accountId = accountId;
         this.identities = identities;
-        identities.remove(user);
+        identities.remove(userIdentity);
         this.enabled = enabled;
+        this.user = userIdentity.getName();
+        this.hostname = null;
+        this.orgs = null;
+        this.teams = null;
+        this.security = null;
+        this.clientId = null;
+        this.userType = userIdentity.getKind();
     }
 
     public Token(boolean enabled) {
@@ -32,6 +80,13 @@ public class Token {
         this.accountId = null;
         this.user = null;
         this.identities = null;
+        this.hostname = null;
+        this.orgs = null;
+        this.teams = null;
+        this.security = null;
+        this.clientId = null;
+        this.userType = null;
+        this.userIdentity = null;
     }
 
     @Field(nullable = true)
@@ -40,13 +95,38 @@ public class Token {
     }
 
     @Field(nullable = true)
-    public String getCode() {
-        return code;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     @Field(nullable = true)
-    public void setCode(String code) {
-        this.code = code;
+    public String getUser() {
+        return user;
+    }
+
+    @Field(nullable = true)
+    public List<String> getOrgs() {
+        return orgs;
+    }
+
+    @Field(nullable = true)
+    public List<TeamAccountInfo> getTeams() {
+        return teams;
+    }
+
+    @Field(nullable = true)
+    public Boolean getSecurity() {
+        return security;
+    }
+
+    @Field(nullable = true)
+    public String getClientId() {
+        return clientId;
+    }
+
+    @Field(nullable = true)
+    public String getUserType() {
+        return userType;
     }
 
     @Field(nullable = true)
@@ -55,8 +135,19 @@ public class Token {
     }
 
     @Field(nullable = true)
-    public Identity getUser() {
-        return user;
+    public String getHostname() {
+        return hostname;
+    }
+
+
+    @Field(nullable = true, required = true)
+    public String getCode() {
+        return code;
+    }
+
+    @Field(nullable = true)
+    public Identity getUserIdentity() {
+        return userIdentity;
     }
 
     @Field(nullable = true)
