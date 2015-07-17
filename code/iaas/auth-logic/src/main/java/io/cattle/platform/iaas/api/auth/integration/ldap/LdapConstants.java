@@ -7,10 +7,10 @@ import com.netflix.config.DynamicStringProperty;
 public class LdapConstants {
 
     public static final String NAME = "ldap";
-    public static final String GROUP_SCOPE = NAME + "Group";
-    public static final String USER_SCOPE = NAME + "User";
+    public static final String GROUP_SCOPE = NAME + "_group";
+    public static final String USER_SCOPE = NAME + "_user";
     public static final String USERNAME = NAME + "UserName";
-    public static final String LDAP_GROUPS = NAME + "Groups";
+    public static final String LDAP_GROUPS = NAME + "_groups";
     public static final String LDAP_ACCESS_TOKEN = NAME + "AccessToken";
     public static final String ACCOUNT_ID = NAME + "_AccountId";
     public static final String LDAP_JWT = NAME + "Jwt";

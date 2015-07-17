@@ -3,11 +3,20 @@
         ".*" : "",
         "schema.*": "r",
         "token": "cr",
-        "token.jwt": "r",
-        "token.code": "cr",
         "token.accountId": "r",
-        "token.user": "r",
+        "token.accountId": "r",
+        "token.clientId": "r",
+        "token.code": "cr",
+        "token.defaultProject": "r",
         "token.enabled": "r",
-        "token.identities": "r"
+        "token.hostname": "r",
+        "token.identities": "r",
+        "token.jwt": "r",
+        "token.orgs": "r",
+        "token.security": "r",
+        "token.teams": "r",
+        "token.user": "r",
+        "token.userIdentity": "r",
+        "token.userType": "r"
     }
 }
