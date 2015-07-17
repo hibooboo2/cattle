@@ -39,8 +39,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             return searchIdentites((String)search.getValue());
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
-//        return refreshIdentities(policy.getIdentities());
-        return new ArrayList<>();
+        return refreshIdentities(policy.getIdentities());
     }
 
     /**

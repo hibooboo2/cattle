@@ -4,6 +4,8 @@ import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.naming.Context;
-import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -39,11 +40,11 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_PRINCIPAL, username);
         props.put(Context.SECURITY_CREDENTIALS, password);
-        LdapContext context;
+        LdapContext userContext;
 
         try {
-            context = (LdapContext) LdapCtxFactory.getLdapCtxInstance("ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
-            return context;
+            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance("ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
+            return userContext;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP / get account information: " + e);
             throw new RuntimeException(e);
@@ -84,27 +85,27 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         return result;
     }
 
-    private Set<Identity> getGroups(SearchResult result, LdapContext context) {
-        Set<Identity> groups = new HashSet<>();
+    private Set<Identity> getIdentities(SearchResult result, LdapContext context) {
+        Set<Identity> identities = new HashSet<>();
         if (result == null) {
-            return groups;
+            return identities;
         }
-        String cn = result.getNameInNamespace();
+        Attributes userAttributes = result.getAttributes();
         Attribute memberOf = result.getAttributes().get("memberOf");
         try {
+            identities.add(getUser((String) userAttributes.get("distinguishedname").get()));
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
                     Attributes attributes = context.getAttributes(memberOf.get(i).toString(), new String[]{"CN"});
                     Attribute commonName = attributes.get("CN");
-                    Attribute samName = attributes.get("CN");
-                    groups.add(new Identity(LdapConstants.GROUP_SCOPE, memberOf.get(i).toString(), commonName.get().toString()));
+                    identities.add(new Identity(LdapConstants.GROUP_SCOPE, memberOf.get(i).toString(), commonName.get().toString()));
                 }
             }
+            return identities;
         } catch (NamingException e) {
             logger.error("Exceptions on groups.", e);
-            return groups;
+            return new HashSet<>();
         }
-        return groups;
     }
 
     private String toDC(String domainName) {
@@ -121,14 +122,12 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         if (!isConfigured()) {
             return new HashSet<>();
         }
-        LdapContext context = login(getUserExternalId(username), password);
-        SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), username);
-        Set<Identity> identities = getGroups(result, context);
-        identities.add(new Identity(LdapConstants.USER_SCOPE, getUserExternalId(username), username));
+        LdapContext userContext = login(getUserExternalId(username), password);
+        Set<Identity> identities = getIdentities(userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username), userContext);
         try {
-            context.close();
+            userContext.close();
         } catch (NamingException e) {
-            logger.error("Failed to close context.", e);
+            logger.error("Failed to close userContext.", e);
         }
         return identities;
     }
@@ -219,21 +218,26 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
     }
 
-    private Identity getGroup(String id) {
-        return new Identity(LdapConstants.GROUP_SCOPE, id, "NOT YET MADE PHANTOM>!>!?");
-    }
-
     private Identity getUser(String id) {
         try {
             LdapContext context = getServiceContext();
-            context = (LdapContext) context.lookup(new LdapName(id));
-            NamingEnumeration<NameClassPair> x = context.list(id);
-            SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), id);
-            Attributes attributes = result.getAttributes();
-            String accountName = (String) attributes.get("displayname").get();
-            String externalId = (String) attributes.get("distinguishedname").get();
-            Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
-            return identity;
+            Attributes search = context.getAttributes(new LdapName(id));
+            String accountName = (String) search.get("cn").get();
+            String externalId = (String) search.get("distinguishedname").get();
+            return new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
+        } catch (NamingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Identity getGroup(String id) {
+        try {
+            LdapContext context = getServiceContext();
+            Attributes search = context.getAttributes(new LdapName(id));
+            String accountName = (String) search.get("name").get();
+            String externalId = (String) search.get("distinguishedname").get();
+            return new Identity(LdapConstants.GROUP_SCOPE, externalId, accountName);
         } catch (NamingException e) {
             e.printStackTrace();
             return null;
