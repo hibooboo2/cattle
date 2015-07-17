@@ -69,10 +69,11 @@ public class Identity {
     @Override
     public String toString() {
         return "Identity{" +
-                "id='" + externalId + '\'' +
+                "id='" + getId() +'\'' +
+                "externalId=" + externalId + '\'' +
                 ", profilePicture='" + profilePicture + '\'' +
                 ", name='" + name + '\'' +
-                ", type='" + getKind() + '\'' +
+                ", kind='" + getKind() + '\'' +
                 '}';
     }
 

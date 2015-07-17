@@ -58,15 +58,21 @@ public class LdapTokenCreator implements TokenCreator {
         }
         Account account;
         Set<Identity> identities = ldapIdentitySearchProvider.getIdentities(username, password);
-        String fullUserName = ldapIdentitySearchProvider.getUserExternalId(username);
-        Identity gotIdentity = new Identity(LdapConstants.USER_SCOPE, fullUserName, username);
-        identities.add(gotIdentity);
+        Identity gotIdentity = null;
+        for (Identity identity: identities){
+            if (identity.getKind().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+                gotIdentity = identity;
+            }
+        }
+        if (gotIdentity == null) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
         boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
         if (SecurityConstants.SECURITY.get()) {
             ldapUtils.isAllowed(identities);
-            account = authDao.getAccountByExternalId(fullUserName, LdapConstants.USER_SCOPE);
+            account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
             if (null == account) {
-                account = authDao.createAccount(username, AccountConstants.USER_KIND, fullUserName,
+                account = authDao.createAccount(username, AccountConstants.USER_KIND, gotIdentity.getExternalId(),
                         LdapConstants.USER_SCOPE);
                 if (!hasAccessToAProject) {
                     projectResourceManager.createProjectForUser(account);
@@ -74,7 +80,7 @@ public class LdapTokenCreator implements TokenCreator {
             }
         } else {
             account = authDao.getAdminAccount();
-            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, fullUserName, LdapConstants.USER_SCOPE);
+            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
             authDao.ensureAllProjectsHaveNonRancherIdMembers(gotIdentity);
         }
         Map<String, Object> jsonData = new HashMap<>();
@@ -82,11 +88,11 @@ public class LdapTokenCreator implements TokenCreator {
         jsonData.put(TokenUtils.ACCOUNT_ID, gotIdentity.getExternalId());
         jsonData.put(LdapConstants.USERNAME, username);
         jsonData.put(LdapConstants.LDAPUSERID, gotIdentity.getExternalId());
-        List<String> externalIdsList = new ArrayList<>();
+        List<String> groupsIdList = new ArrayList<>();
         for (Identity identity : identities) {
-            externalIdsList.add(identity.getId());
+            groupsIdList.add(identity.getExternalId());
         }
-        jsonData.put(LdapConstants.LDAP_GROUPS, externalIdsList);
+        jsonData.put(LdapConstants.LDAP_GROUPS, groupsIdList);
         objectManager.persist(account);
         account = objectManager.reload(account);
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
@@ -97,6 +103,9 @@ public class LdapTokenCreator implements TokenCreator {
 
     @Override
     public Token createToken(ApiRequest request) throws IOException {
+        if (!isConfigured()) {
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LdapConfig", "LdapConfig is not Configured.", null);
+        }
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(GithubConstants.GITHUB_REQUEST_CODE));
         String[] split = code.split(":");
