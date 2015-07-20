@@ -28,6 +28,8 @@
 
     <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl" />
     <bean id="AdminAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.AdminAuthLookUp" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentitySearchProvider" />
+
     <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.HeaderAuthLookup" >
         <property name="adminLookup" ref="BasicAuth" />
         <property name="adminAuthProvider" ref="DefaultAuthorizationProvider" />

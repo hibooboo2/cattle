@@ -68,6 +68,18 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
+    public List<Account> searchAccounts(String name) {
+        List<Account> accounts = new ArrayList<>();
+        accounts.addAll(create()
+                .selectFrom(ACCOUNT)
+                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(ACCOUNT.NAME.contains(name)))
+                .orderBy(ACCOUNT.ID.asc()).fetch());
+        return accounts;
+    }
+
+
+    @Override
     public Account getAccountById(Long id) {
         return create()
                 .selectFrom(ACCOUNT)

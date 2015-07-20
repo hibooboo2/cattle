@@ -45,4 +45,6 @@ public interface AuthDao {
     ProjectMember createProjectMember(Account project, Member member);
 
     void ensureAllProjectsHaveNonRancherIdMembers(Identity identity);
+
+    List<Account> searchAccounts(String name);
 }
