@@ -15,8 +15,12 @@ public class LdapConfig implements AuthConfig{
     private final String accessMode;
     private final String serviceAccountUsername;
     private final String serviceAccountPassword;
+    private final boolean tls;
+    private final String searchFieldUser;
 
-    public LdapConfig(String server, int port, String loginDomain, String domain, boolean enabled, String accessMode, String serviceAccountUsername, String serviceAccountPassword) {
+    public LdapConfig(String server, int port, String loginDomain, String domain,
+                      boolean enabled, String accessMode, String serviceAccountUsername,
+                      String serviceAccountPassword, boolean tls, String searchFieldUser) {
         this.server = server;
         this.port = port;
         this.loginDomain = loginDomain;
@@ -25,6 +29,8 @@ public class LdapConfig implements AuthConfig{
         this.accessMode = accessMode;
         this.serviceAccountUsername = serviceAccountUsername;
         this.serviceAccountPassword = serviceAccountPassword;
+        this.tls = tls;
+        this.searchFieldUser = searchFieldUser;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -32,7 +38,7 @@ public class LdapConfig implements AuthConfig{
         return server;
     }
 
-    @Field(nullable = true)
+    @Field(nullable = false)
     public boolean getEnabled() {
         return enabled;
     }
@@ -75,5 +81,15 @@ public class LdapConfig implements AuthConfig{
     @Field(nullable = false, required = true, minLength = 1)
     public String getServiceAccountPassword() {
         return serviceAccountPassword;
+    }
+
+    @Field(nullable = false, required = true)
+    public boolean getTls() {
+        return tls;
+    }
+
+    @Field(nullable = true, required = false, defaultValue = "sAMAccountName")
+    public String getSearchFieldUser() {
+        return searchFieldUser;
     }
 }

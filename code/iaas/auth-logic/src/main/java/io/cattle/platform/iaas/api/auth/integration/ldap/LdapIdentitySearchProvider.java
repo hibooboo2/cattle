@@ -4,8 +4,6 @@ import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
-import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +41,9 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         LdapContext userContext;
 
         try {
-            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance("ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
+            String scheme = LdapConstants.TLS_ENABLED.get() ? "ldaps://" : "ldap://";
+            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance(
+                    scheme + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
             return userContext;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP / get account information: " + e);
@@ -57,7 +57,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> renum;
         try {
-            renum = context.search(toDC(domain), "(sAMAccountName=" + name + ")", controls);
+            renum = context.search(toDC(domain), '(' + LdapConstants.SEARCH_FIELD.get() + '=' + name + ')', controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
             return null;

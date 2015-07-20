@@ -175,13 +175,20 @@ public class GithubConfigManager extends AbstractNoOpResourceManager implements 
             settingsUtils.changeSetting(GithubConstants.CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
         }
         settingsUtils.changeSetting(GithubConstants.ACCESSMODE_SETTING, config.get(TokenUtils.ACCESSMODE));
-        settingsUtils.changeSetting(GithubConstants.ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(GithubConstants.ALLOWED_USERS)), ","));
-        settingsUtils.changeSetting(GithubConstants.ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(GithubConstants.ALLOWED_ORGS)), ","));
+        settingsUtils.changeSetting(GithubConstants.ALLOWED_USERS_SETTING,
+                StringUtils.join(appendUserIds((List<String>) config.get(GithubConstants.ALLOWED_USERS)), ","));
+        settingsUtils.changeSetting(GithubConstants.ALLOWED_ORGS_SETTING,
+                StringUtils.join(appendOrgIds((List<String>) config.get(GithubConstants.ALLOWED_ORGS)), ","));
         return getCurrentConfig(config);
     }
 
     @Override
     public String getName() {
         return GithubConstants.MANAGER;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return client.githubConfigured();
     }
 }

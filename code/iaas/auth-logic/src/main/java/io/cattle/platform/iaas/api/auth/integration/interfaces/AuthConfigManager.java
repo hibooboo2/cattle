@@ -1,10 +1,8 @@
 package io.cattle.platform.iaas.api.auth.integration.interfaces;
 
-import io.cattle.platform.util.type.Named;
-
 import java.util.Map;
 
-public interface AuthConfigManager extends Named{
+public interface AuthConfigManager extends Configurable{
 
     AuthConfig getCurrentConfig(Map<String, Object> config);
 
