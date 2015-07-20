@@ -112,6 +112,7 @@
         "ldapconfig.name" : "r",
         "ldapconfig.serviceAccountUsername" : "cr",
         "ldapconfig.serviceAccountPassword" : "cr",
+        "ldapconfig.tls" : "cr",
 
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",

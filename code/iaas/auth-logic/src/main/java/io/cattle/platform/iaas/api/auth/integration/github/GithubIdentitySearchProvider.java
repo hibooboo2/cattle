@@ -72,7 +72,8 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         }
         HttpResponse res;
         try {
-            res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + name).addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
+            res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + name)
+                    .addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
                     ("Accept", "application/json").execute().returnResponse();
             int statusCode = res.getStatusLine().getStatusCode();
             if (statusCode != 200) {

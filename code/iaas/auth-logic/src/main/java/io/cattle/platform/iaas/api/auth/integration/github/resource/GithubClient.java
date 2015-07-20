@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.github.resource;
 
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubIdentitySearchProvider;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubUtils;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -212,7 +211,8 @@ public class GithubClient {
                 toReturn = apiEndpoint + "/teams/";
                 break;
             default:
-                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "GithubIdentitySearchProvider", "Attempted to get invalid Api endpoint.", null);
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                        "GithubIdentitySearchProvider", "Attempted to get invalid Api endpoint.", null);
         }
         return toReturn;
     }

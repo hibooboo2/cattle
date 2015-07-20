@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class LdapConstants {
@@ -22,12 +23,15 @@ public class LdapConstants {
     public static final String LOGIN_DOMAIN_SETTING = "api.auth.ldap.login.domain";
     public static final String PORT = "port";
     public static final String PORT_SETTING = "api.auth.ldap.port";
+    public static final String SEARCH_FIELD_USER_SETTING = "api.auth.ldap.port";
     public static final String SERIVCEACCOUNTUSERNAME_SETTING = "api.auth.ldap.service.account.user";
     public static final String SERVER = "server";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
     public static final String SERVICEACCOUNTPASSWORD = "serviceAccountPassword";
     public static final String SERVICEACCOUNTPASSWORD_SETTING = "api.auth.ldap.service.account.password";
     public static final String SERVICEACCOUNTUSERNAME = "serviceAccountUsername";
+    public static final String TLS = "tls";
+    public static final String TLS_SETTING = "api.auth.ldap.tls";
     public static final String TOKEN = "token";
     public static final String USER_SCOPE = NAME + "_user";
     public static final String USERNAME = NAME + "UserName";
@@ -46,4 +50,7 @@ public class LdapConstants {
     public static final DynamicStringProperty SERVICEACCOUNT_USER = ArchaiusUtil.getString(SERIVCEACCOUNTUSERNAME_SETTING);
 
     public static final String TOKEN_CREATOR = NAME + "TokenCreator";
+    public static final DynamicBooleanProperty TLS_ENABLED = ArchaiusUtil.getBoolean(TLS_SETTING);
+    public static final DynamicStringProperty SEARCH_FIELD = ArchaiusUtil.getString(SEARCH_FIELD_USER_SETTING);
+    public static final String SEARCH_FIELD_USER = "searchFieldUser";
 }
