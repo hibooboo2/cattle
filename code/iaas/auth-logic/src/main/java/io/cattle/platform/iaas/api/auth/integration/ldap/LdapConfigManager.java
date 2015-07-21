@@ -127,6 +127,11 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.SERVICEACCOUNTPASSWORD_SETTING, config.get(LdapConstants.SERVICEACCOUNTPASSWORD));
         settingsUtils.changeSetting(LdapConstants.TLS_SETTING, config.get(LdapConstants.TLS));
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
+        if (config.get(SecurityConstants.ENABLED) != null && (boolean) config.get(SecurityConstants.ENABLED)){
+            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, LdapConstants.CONFIG);
+        } else {
+            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
+        }
         return currentLdapConfig(config);
     }
 

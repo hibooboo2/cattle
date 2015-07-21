@@ -13,4 +13,5 @@ public class SecurityConstants {
     public static final String AUTH_PROVIDER_SETTING = "api.auth.provider.configured";
     public static final DynamicStringProperty AUTHPROVIDER = ArchaiusUtil.getString(AUTH_PROVIDER_SETTING);
 
+    public static final String NO_PROVIDER = "none";
 }
