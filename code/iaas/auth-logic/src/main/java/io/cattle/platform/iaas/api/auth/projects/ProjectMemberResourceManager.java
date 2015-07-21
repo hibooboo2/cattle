@@ -193,7 +193,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             return null;
         }
         member.setName(newIdentity.getName());
-        member.setExternalId(newIdentity.getId());
+        member.setExternalId(newIdentity.getExternalId());
         member.setExternalIdType(newIdentity.getKind());
         return member;
     }

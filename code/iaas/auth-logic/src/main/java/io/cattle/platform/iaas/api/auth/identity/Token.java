@@ -3,10 +3,14 @@ package io.cattle.platform.iaas.api.auth.identity;
         import io.cattle.platform.api.auth.Identity;
         import io.cattle.platform.iaas.api.auth.TokenUtils;
         import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
+        import io.cattle.platform.util.type.CollectionUtils;
         import io.github.ibuildthecloud.gdapi.annotation.Field;
         import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+        import java.util.Arrays;
         import java.util.List;
+
+        import com.google.common.collect.Lists;
 
 @Type(name = TokenUtils.TOKEN)
 public class Token {
@@ -20,6 +24,7 @@ public class Token {
     private final Boolean security;
     private final String clientId;
     private final String userType;
+    private final String authProvider;
 
     private final String accountId;
     private final Identity userIdentity;
@@ -27,9 +32,10 @@ public class Token {
     private final List<Identity> identities;
 
     public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType,
-                 String accountId) {
+                 String authProvider, String accountId, List<Identity> identities) {
         this.jwt = jwt;
         this.user = username;
+        this.authProvider = authProvider;
         this.hostname = null;
         this.orgs = orgs;
         this.teams = teams;
@@ -38,12 +44,13 @@ public class Token {
         this.userType = userType;
         this.accountId = accountId;
         this.userIdentity = null;
-        enabled = this.security;
-        identities = null;
+        this.enabled = this.security;
+        this.identities = identities;
 
     }
 
-    public Token(Boolean security, String clientId, String hostName) {
+    public Token(Boolean security, String clientId, String hostName, String authProvider) {
+        this.authProvider = authProvider;
         this.jwt = null;
         this.user = null;
         this.orgs = null;
@@ -58,12 +65,12 @@ public class Token {
         identities = null;
     }
 
-    public Token(String jwt, String accountId, Identity userIdentity, List<Identity> identities, boolean enabled) {
+    public Token(String jwt, String authProvider, String accountId, Identity userIdentity, List<Identity> identities, boolean enabled) {
         this.jwt = jwt;
+        this.authProvider = authProvider;
         this.userIdentity = userIdentity;
         this.accountId = accountId;
         this.identities = identities;
-        identities.remove(userIdentity);
         this.enabled = enabled;
         this.user = userIdentity.getName();
         this.hostname = null;
@@ -74,7 +81,8 @@ public class Token {
         this.userType = userIdentity.getKind();
     }
 
-    public Token(boolean enabled) {
+    public Token(String authProvider, boolean enabled) {
+        this.authProvider = authProvider;
         this.enabled = enabled;
         this.jwt = null;
         this.accountId = null;
@@ -156,7 +164,12 @@ public class Token {
     }
 
     @Field(nullable = true)
-    public List<Identity> getIdentities() {
-        return identities;
+    public Identity[] getIdentities() {
+        return (Identity[]) identities.toArray();
+    }
+
+    @Field(nullable = true)
+    public String getAuthProvider() {
+        return authProvider;
     }
 }

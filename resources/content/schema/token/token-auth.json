@@ -17,6 +17,7 @@
         "token.teams": "r",
         "token.user": "r",
         "token.userIdentity": "r",
+        "token.authProvider": "r",
         "token.userType": "r"
     }
 }
