@@ -42,8 +42,8 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
         try {
             String scheme = LdapConstants.TLS_ENABLED.get() ? "ldaps://" : "ldap://";
-            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance(
-                    scheme + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/', props);
+            String url = scheme + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/';
+            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance( url, props);
             return userContext;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP / get account information: " + e);
@@ -57,7 +57,8 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> renum;
         try {
-            renum = context.search(toDC(domain), '(' + LdapConstants.SEARCH_FIELD.get() + '=' + name + ')', controls);
+            String query = '(' + LdapConstants.SEARCH_FIELD.get() + '=' + name + ')';
+            renum = context.search(toDC(domain), query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
             return null;

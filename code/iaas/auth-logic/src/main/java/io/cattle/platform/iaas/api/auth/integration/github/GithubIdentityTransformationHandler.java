@@ -49,7 +49,7 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
                 return new Identity(GithubConstants.ORG_SCOPE, id, name);
             case GithubConstants.TEAM_SCOPE:
                 String org = githubClient.getTeamOrgById(identity.getExternalId());
-                return new Identity(GithubConstants.TEAM_SCOPE, identity.getId(), org + ":" + identity.getId());
+                return new Identity(GithubConstants.TEAM_SCOPE, identity.getExternalId(), org + ":" + identity.getExternalId());
             default:
                 return null;
         }

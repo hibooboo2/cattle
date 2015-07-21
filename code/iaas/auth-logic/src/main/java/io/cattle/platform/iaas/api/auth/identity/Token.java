@@ -3,14 +3,11 @@ package io.cattle.platform.iaas.api.auth.identity;
         import io.cattle.platform.api.auth.Identity;
         import io.cattle.platform.iaas.api.auth.TokenUtils;
         import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
-        import io.cattle.platform.util.type.CollectionUtils;
         import io.github.ibuildthecloud.gdapi.annotation.Field;
         import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-        import java.util.Arrays;
         import java.util.List;
 
-        import com.google.common.collect.Lists;
 
 @Type(name = TokenUtils.TOKEN)
 public class Token {

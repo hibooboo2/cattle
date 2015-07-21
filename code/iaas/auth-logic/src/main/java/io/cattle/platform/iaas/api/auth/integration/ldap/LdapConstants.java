@@ -23,7 +23,7 @@ public class LdapConstants {
     public static final String LOGIN_DOMAIN_SETTING = "api.auth.ldap.login.domain";
     public static final String PORT = "port";
     public static final String PORT_SETTING = "api.auth.ldap.port";
-    public static final String SEARCH_FIELD_USER_SETTING = "api.auth.ldap.port";
+    public static final String SEARCH_FIELD_USER_SETTING = "api.auth.ldap.search.field.user";
     public static final String SERIVCEACCOUNTUSERNAME_SETTING = "api.auth.ldap.service.account.user";
     public static final String SERVER = "server";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
@@ -53,4 +53,5 @@ public class LdapConstants {
     public static final DynamicBooleanProperty TLS_ENABLED = ArchaiusUtil.getBoolean(TLS_SETTING);
     public static final DynamicStringProperty SEARCH_FIELD = ArchaiusUtil.getString(SEARCH_FIELD_USER_SETTING);
     public static final String SEARCH_FIELD_USER = "searchFieldUser";
+    public static final String MANAGER = NAME + "Manager";
 }
