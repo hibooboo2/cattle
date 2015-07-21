@@ -175,7 +175,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             }
         }
         member.setName(identity.getName());
-        member.setExternalId(identity.getId());
+        member.setExternalId(identity.getExternalId());
         member.setExternalIdType(identity.getKind());
         return member;
     }

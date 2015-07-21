@@ -216,7 +216,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         //Database call.
         Condition allMembers = DSL.falseCondition();
         for (Identity id : identities) {
-            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
+            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.REMOVED.isNull())
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE)));
@@ -271,7 +271,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
         for (Identity id : identities) {
-            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
+            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.ROLE.eq(ProjectConstants.OWNER))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
@@ -295,7 +295,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
         for (Identity id : identities) {
-            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getId())
+            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getKind()))
                     .and(PROJECT_MEMBER.ROLE.in(roles))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))

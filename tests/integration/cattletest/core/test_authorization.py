@@ -366,6 +366,7 @@ def test_token_auth(token_client):
         'accountId': 'r',
         'hostname': 'r',
         'userIdentity': 'r',
+        'authProvider': 'r',
         'enabled': 'r'
     })
 

@@ -110,6 +110,7 @@
         "ldapconfig.domain" : "cr",
         "ldapconfig.accessMode" : "cr",
         "ldapconfig.name" : "r",
+        "ldapconfig.searchFieldUser" : "cr",
         "ldapconfig.serviceAccountUsername" : "cr",
         "ldapconfig.serviceAccountPassword" : "cr",
         "ldapconfig.tls" : "cr",

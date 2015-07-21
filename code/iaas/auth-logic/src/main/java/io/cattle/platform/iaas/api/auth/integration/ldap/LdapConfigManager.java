@@ -15,9 +15,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * Created by wizardofmath on 7/9/15.
- */
 public class LdapConfigManager extends AbstractNoOpResourceManager implements AuthConfigManager{
 
 
@@ -124,6 +121,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.ACCESS_MODE_SETTING, config.get(LdapConstants.ACCESSMODE));
         settingsUtils.changeSetting(LdapConstants.SERVER_SETTING, config.get(LdapConstants.SERVER));
         settingsUtils.changeSetting(LdapConstants.LOGIN_DOMAIN_SETTING, config.get(LdapConstants.LOGIN_DOMAIN));
+        settingsUtils.changeSetting(LdapConstants.SEARCH_FIELD_USER_SETTING, config.get(LdapConstants.SEARCH_FIELD_USER));
         settingsUtils.changeSetting(LdapConstants.PORT_SETTING, config.get(LdapConstants.PORT));
         settingsUtils.changeSetting(LdapConstants.SERIVCEACCOUNTUSERNAME_SETTING, config.get(LdapConstants.SERVICEACCOUNTUSERNAME));
         settingsUtils.changeSetting(LdapConstants.SERVICEACCOUNTPASSWORD_SETTING, config.get(LdapConstants.SERVICEACCOUNTPASSWORD));
@@ -134,7 +132,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
 
     @Override
     public String getName() {
-        return null;
+        return LdapConstants.MANAGER;
     }
 
     @Override
