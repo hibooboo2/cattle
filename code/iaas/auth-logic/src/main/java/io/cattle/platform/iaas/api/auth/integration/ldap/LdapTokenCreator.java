@@ -98,7 +98,7 @@ public class LdapTokenCreator implements TokenCreator {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, accountId, gotIdentity, new ArrayList<>(identities), SecurityConstants.SECURITY.get());
+        return new Token(jwt, SecurityConstants.AUTHPROVIDER.get(), accountId, gotIdentity, new ArrayList<>(identities), SecurityConstants.SECURITY.get());
     }
 
     @Override

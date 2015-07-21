@@ -364,7 +364,9 @@ def test_token_auth(token_client):
         'teams': 'r',
         'userType': 'r',
         'accountId': 'r',
-        'hostname': 'r'
+        'hostname': 'r',
+        'userIdentity': 'r',
+        'enabled': 'r'
     })
 
 

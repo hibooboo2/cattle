@@ -1,8 +1,8 @@
 {
   "resourceActions" : {
     "setmembers": {
-      "input": "array[member]",
-      "output": "array[member]",
+      "input": "setProjectMembersInput",
+      "output": "setProjectMembersInput",
       "attributes" : {
         "capability" : "owner"
       }
@@ -45,7 +45,7 @@
   },
   "resourceFields": {
     "members": {
-      "type": "array[member]",
+      "type": "array[projectMember]",
       "nullable": "true"
     }
   }

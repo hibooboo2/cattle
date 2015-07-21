@@ -68,7 +68,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         }
         Identity identity = null;
         for (IdentitySearchProvider identitySearchProvider : identitySearchProviders.values()) {
-            if (identitySearchProvider.scopesProvided().contains(split[0])) {
+            if (identitySearchProvider.scopesProvided().contains(split[0]) && identitySearchProvider.isConfigured()) {
                 identity = identitySearchProvider.getIdentity(split[1], split[0]);
             }
             if (identity != null) {

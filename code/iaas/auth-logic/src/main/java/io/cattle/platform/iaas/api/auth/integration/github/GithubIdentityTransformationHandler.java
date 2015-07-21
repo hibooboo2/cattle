@@ -38,17 +38,17 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
         GithubAccountInfo githubAccountInfo;
         switch (identity.getKind()) {
             case GithubConstants.USER_SCOPE:
-                githubAccountInfo = githubClient.getUserIdByName(identity.getId());
+                githubAccountInfo = githubClient.getUserIdByName(identity.getExternalId());
                 id = githubAccountInfo.getAccountId();
                 name = githubAccountInfo.getAccountName();
                 return new Identity(GithubConstants.USER_SCOPE, id, name);
             case GithubConstants.ORG_SCOPE:
-                githubAccountInfo = githubClient.getOrgIdByName(identity.getId());
+                githubAccountInfo = githubClient.getOrgIdByName(identity.getExternalId());
                 id = githubAccountInfo.getAccountId();
                 name = githubAccountInfo.getAccountName();
                 return new Identity(GithubConstants.ORG_SCOPE, id, name);
             case GithubConstants.TEAM_SCOPE:
-                String org = githubClient.getTeamOrgById(identity.getId());
+                String org = githubClient.getTeamOrgById(identity.getExternalId());
                 return new Identity(GithubConstants.TEAM_SCOPE, identity.getId(), org + ":" + identity.getId());
             default:
                 return null;
