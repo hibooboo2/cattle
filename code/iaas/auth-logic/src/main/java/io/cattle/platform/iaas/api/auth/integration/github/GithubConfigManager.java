@@ -179,6 +179,11 @@ public class GithubConfigManager extends AbstractNoOpResourceManager implements 
                 StringUtils.join(appendUserIds((List<String>) config.get(GithubConstants.ALLOWED_USERS)), ","));
         settingsUtils.changeSetting(GithubConstants.ALLOWED_ORGS_SETTING,
                 StringUtils.join(appendOrgIds((List<String>) config.get(GithubConstants.ALLOWED_ORGS)), ","));
+        if (config.get(SecurityConstants.ENABLED) != null && (boolean) config.get(SecurityConstants.ENABLED)){
+            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, GithubConstants.CONFIG);
+        } else {
+            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
+        }
         return getCurrentConfig(config);
     }
 
