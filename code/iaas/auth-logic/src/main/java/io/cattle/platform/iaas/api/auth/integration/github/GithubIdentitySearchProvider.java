@@ -71,24 +71,61 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         if (!isConfigured()){
             return new ArrayList<>();
         }
+        switch (scope){
+            case GithubConstants.USER_SCOPE:
+                return searchUsers(name, exactMatch);
+            case GithubConstants.ORG_SCOPE:
+                return searchGroups(name, exactMatch);
+            case GithubConstants.TEAM_SCOPE:
+                return searchTeams(name, exactMatch);
+            default:
+                return new ArrayList<>();
+        }
+    }
+
+    private List<Identity> searchTeams(String teamName, boolean exactMatch) {
+        return new ArrayList<>();
+    }
+
+    private List<Identity> searchGroups(String groupName, boolean exactMatch) {
+        return new ArrayList<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Identity> searchUsers(String userName, boolean exactMatch) {
+        List<Identity> identities = new ArrayList<>();
+        if (exactMatch) {
+            GithubAccountInfo user;
+            try {
+                user =  githubClient.getUserIdByName(userName);
+            } catch (ClientVisibleException e) {
+                return identities;
+            }
+            Identity identity = user.toIdentity(GithubConstants.USER_SCOPE);
+            identities.add(identity);
+            return identities;
+        }
         HttpResponse res;
+        List<Map<String, Object>> x;
         try {
-            res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + name)
+            res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + userName)
                     .addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
-                    ("Accept", "application/json").execute().returnResponse();
+                            ("Accept", "application/json").execute().returnResponse();
             int statusCode = res.getStatusLine().getStatusCode();
             if (statusCode != 200) {
                 githubClient.noGithub(statusCode);
             }
             //TODO:Finish implementing search.
             Map<String, Object> jsonData = jsonMapper.readValue(res.getEntity().getContent());
-            jsonData.toString();
+            x =  (List<Map<String, Object>>) jsonData.get("items");
         } catch (IOException e) {
             //TODO: Propper Error Handling.
-            return null;
+            return identities;
         }
-        List<Identity> identities = new ArrayList<>();
-        identities.add(new Identity(scope, res.toString()));
+        for (Map<String, Object> user: x){
+            identities.add(new Identity(GithubConstants.USER_SCOPE, String.valueOf(user.get("id")),
+                    (String) user.get(LOGIN), (String) user.get("html_url"), (String) user.get("avatar_url")));
+        }
         return identities;
     }
 
@@ -100,12 +137,10 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         switch (scope) {
             case GithubConstants.USER_SCOPE:
                 GithubAccountInfo user = getUserOrgById(id);
-                return new Identity(GithubConstants.USER_SCOPE, user.getAccountId(),
-                        user.getAccountName(), user.getProfileUrl(), user.getProfilePicture());
+                return user == null ? null : user.toIdentity(GithubConstants.USER_SCOPE);
             case GithubConstants.ORG_SCOPE:
                 GithubAccountInfo org = getUserOrgById(id);
-                return new Identity(GithubConstants.ORG_SCOPE, org.getAccountId(),
-                        org.getAccountName(), org.getProfileUrl(), org.getProfilePicture());
+                return org == null ? null : org.toIdentity(GithubConstants.ORG_SCOPE);
             case GithubConstants.TEAM_SCOPE:
                 return getTeamById(id);
             default:
@@ -155,8 +190,7 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
                             GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
-                        "Non-200 Response from Github", "Status code from Github: " + Integer.toString(statusCode));
+                githubClient.noGithub(statusCode);
             }
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 

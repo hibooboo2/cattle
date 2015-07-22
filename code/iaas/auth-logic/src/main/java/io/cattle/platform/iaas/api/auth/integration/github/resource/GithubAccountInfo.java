@@ -1,5 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.github.resource;
 
+import io.cattle.platform.api.auth.Identity;
+
 public class GithubAccountInfo {
     private final String accountId;
     private final String accountName;
@@ -33,5 +35,9 @@ public class GithubAccountInfo {
 
     public String getProfileUrl() {
         return profileUrl;
+    }
+
+    public Identity toIdentity(String scope) {
+        return new Identity(scope, accountId, accountName, profileUrl, profilePicture);
     }
 }
