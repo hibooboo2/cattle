@@ -76,6 +76,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+        //LEGACY: Used for old Implementation of projects/ Idnetities. Remove when vincent changes to new api.
         return new Token(SecurityConstants.SECURITY.get(), GithubConstants.GITHUB_CLIENT_ID.get(),
                 GithubConstants.GITHUB_HOSTNAME.get(), SecurityConstants.AUTHPROVIDER.get());
     }
