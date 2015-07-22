@@ -8,13 +8,13 @@ import java.util.List;
 
 public abstract class AbstractIdentitySearchProvider implements IdentitySearchProvider {
 
-    public List<Identity> searchIdentities(String name) {
+    public List<Identity> searchIdentities(String name, boolean exactMatch) {
         if (!isConfigured()){
             return new ArrayList<>();
         }
         List<Identity> identities = new ArrayList<>();
         for (String scope : scopesProvided()) {
-            identities.addAll(searchIdentities(name, scope));
+            identities.addAll(searchIdentities(name, scope, exactMatch));
         }
         return identities;
     }
@@ -28,7 +28,7 @@ public abstract class AbstractIdentitySearchProvider implements IdentitySearchPr
      * @param scope the scope to search in.
      * @return {@link List} of identities found based on search.
      */
-    public abstract List<Identity> searchIdentities(String name, String scope);
+    public abstract List<Identity> searchIdentities(String name, String scope, boolean exactMatch);
 
     public abstract Identity getIdentity(String id, String scope);
 

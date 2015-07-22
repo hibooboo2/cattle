@@ -66,7 +66,8 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
     }
 
     @Override
-    public List<Identity> searchIdentities(String name, String scope) {
+    public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
+        //TODO:Implement exact match.
         if (!isConfigured()){
             return new ArrayList<>();
         }

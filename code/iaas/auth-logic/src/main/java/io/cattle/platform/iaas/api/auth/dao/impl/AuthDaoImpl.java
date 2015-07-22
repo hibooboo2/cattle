@@ -73,9 +73,20 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         accounts.addAll(create()
                 .selectFrom(ACCOUNT)
                 .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(ACCOUNT.NAME.contains(name)))
+                        .and(ACCOUNT.NAME.contains(name))
+                        .and(ACCOUNT.KIND.ne(ProjectConstants.TYPE)))
                 .orderBy(ACCOUNT.ID.asc()).fetch());
         return accounts;
+    }
+
+    @Override
+    public Account getByName(String name) {
+        return create()
+                .selectFrom(ACCOUNT)
+                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(ACCOUNT.NAME.eq(name))
+                        .and(ACCOUNT.KIND.ne(ProjectConstants.TYPE)))
+                .orderBy(ACCOUNT.ID.asc()).fetchOneInto(Account.class);
     }
 
 
@@ -86,6 +97,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .where(
                         ACCOUNT.ID.eq(id)
                                 .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
+                                .and(ACCOUNT.KIND.ne(ProjectConstants.TYPE))
                                 .and(ACCOUNT.REMOVED.isNull())
                 ).fetchOne();
     }

@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -35,7 +36,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         }
         if (criteria.containsKey("name")) {
             Condition search = ((List<Condition>) criteria.get("name")).get(0);
-            return searchIdentites((String)search.getValue());
+            return searchIdentites((String)search.getValue(), search.getConditionType().equals(ConditionType.EQ));
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         return refreshIdentities(policy.getIdentities());
@@ -78,10 +79,10 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         return identity;
     }
 
-    private List<Identity> searchIdentites(String name) {
+    private List<Identity> searchIdentites(String name, boolean exactMatch) {
         Set<Identity> identities = new HashSet<>();
         for (IdentitySearchProvider identitySearchProvider : identitySearchProviders.values()) {
-            identities.addAll(identitySearchProvider.searchIdentities(name));
+            identities.addAll(identitySearchProvider.searchIdentities(name, exactMatch));
         }
         for (Identity identity : identities) {
             authorize(identity);
