@@ -7,9 +7,6 @@ import io.cattle.platform.object.ObjectManager;
 
 import javax.inject.Inject;
 
-/**
- * Created by wizardofmath on 7/9/15.
- */
 public class SettingsUtils {
 
     @Inject
