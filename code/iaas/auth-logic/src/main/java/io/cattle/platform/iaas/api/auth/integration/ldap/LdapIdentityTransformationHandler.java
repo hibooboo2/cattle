@@ -17,11 +17,27 @@ public class LdapIdentityTransformationHandler implements IdentityTransformation
 
     @Override
     public Identity transform(Identity identity) {
+        switch (identity.getKind()){
+            case LdapConstants.USER_SCOPE:
+                break;
+            case LdapConstants.GROUP_SCOPE:
+                break;
+            default:
+                return null;
+        }
         return identity;
     }
 
     @Override
     public Identity untransform(Identity identity) {
+        switch (identity.getKind()){
+            case LdapConstants.USER_SCOPE:
+                break;
+            case LdapConstants.GROUP_SCOPE:
+                break;
+            default:
+                return null;
+        }
         return identity;
     }
 
