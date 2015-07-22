@@ -46,8 +46,7 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
     @Override
     public Set<Identity> getIdentities(Account account) {
         Set<Identity> identities = new HashSet<>();
-        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(accountId), account.getName()));
+        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
         return identities;
     }
 }

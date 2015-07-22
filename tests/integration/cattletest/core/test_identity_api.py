@@ -49,7 +49,3 @@ def test_search_identity_name_like(admin_user_client):
             if (identity.name == name):
                 found += 1
     assert found == 5
-
-
-def test_make_project_with_identity(admin_user_client):
-    pass

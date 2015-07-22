@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
+import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
 import java.util.ArrayList;
@@ -17,6 +18,9 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
 
     @Inject
     AuthDao authDao;
+
+    @Inject
+    private ObjectManager objectManager;
 
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
@@ -32,7 +36,8 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
         }
         for(Account account: accounts){
             if (account != null) {
-                identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
+                String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
+                identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName()));
             }
         }
         return identities;
@@ -44,8 +49,11 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
         Account account = authDao.getAccountById(Long.valueOf(accountId == null ? id : accountId));
         if (account == null) {
             return null;
+        } else if (account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
+            return null;
         }
-        return new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName());
+        accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
+        return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName());
     }
 
     @Override

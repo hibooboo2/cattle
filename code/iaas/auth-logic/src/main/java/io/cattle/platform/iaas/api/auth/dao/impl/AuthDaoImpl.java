@@ -97,7 +97,6 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .where(
                         ACCOUNT.ID.eq(id)
                                 .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
-                                .and(ACCOUNT.KIND.ne(ProjectConstants.TYPE))
                                 .and(ACCOUNT.REMOVED.isNull())
                 ).fetchOne();
     }
