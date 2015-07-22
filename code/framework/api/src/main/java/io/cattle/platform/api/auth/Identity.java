@@ -47,12 +47,12 @@ public class Identity {
     }
 
     public Identity(String identityType, String externalId, String name) {
-        this(identityType, externalId, name, null, null);
+        this(identityType, externalId, name, null);
     }
-//
-//    public Identity(String identityType, String externalId, String name, String profileUrl) {
-//        this(identityType, externalId, name, profileUrl, null);
-//    }
+
+    public Identity(String identityType, String externalId, String name, String profileUrl) {
+        this(identityType, externalId, name, profileUrl, null);
+    }
 
     public Identity(String identityType, String externalId, String name, String profileUrl, String profilePicture) {
         this.externalId = externalId;
@@ -89,8 +89,6 @@ public class Identity {
     @Override
     public int hashCode() {
         int result = externalId != null ? externalId.hashCode() : 0;
-        result = 31 * result + (profilePicture != null ? profilePicture.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (kind != null ? kind.hashCode() : 0);
         return result;
     }

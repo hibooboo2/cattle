@@ -6,10 +6,11 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
+import java.util.ArrayList;
 import java.util.Map;
 import javax.inject.Inject;
 
-public class AuthConfigsManager extends AbstractNoOpResourceManager {
+public class AuthIntegrationManager extends AbstractNoOpResourceManager {
 
     Map<String, AuthConfigManager> authConfigManagers;
 
@@ -41,7 +42,7 @@ public class AuthConfigsManager extends AbstractNoOpResourceManager {
                 return currentConfig;
             }
         }
-        return false;
+        return new ArrayList<>();
     }
 
 }
