@@ -107,10 +107,13 @@ public class GithubClient {
         return teamInfoList;
     }
 
-    public GithubAccountInfo getUserIdByName(String username) {
+    public GithubAccountInfo getGithubUserByName(String username) {
         String githubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
         try {
             if (StringUtils.isEmpty(username)) {
+                return null;
+            }
+            if (getGithubOrgByName(username) != null){
                 return null;
             }
             HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USERS) + username)
@@ -118,8 +121,7 @@ public class GithubClient {
                             GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
-                        "Non-200 Response from Github", "Status code from Github: " + Integer.toString(statusCode));
+                noGithub(statusCode);
             }
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
@@ -135,7 +137,7 @@ public class GithubClient {
 
     }
 
-    public GithubAccountInfo getOrgIdByName(String org) {
+    public GithubAccountInfo getGithubOrgByName(String org) {
         String gitHubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
         try {
             if (StringUtils.isEmpty(org)) {
@@ -146,8 +148,10 @@ public class GithubClient {
                     .addHeader(GithubConstants.AUTHORIZATION, "token " + gitHubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
-                        "Non-200 Response from Github", "Status code from Github: " + Integer.toString(statusCode));
+                if (statusCode == 404) {
+                    return null;
+                }
+                noGithub(statusCode);
             }
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
@@ -212,7 +216,7 @@ public class GithubClient {
                 break;
             default:
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
-                        "GithubIdentitySearchProvider", "Attempted to get invalid Api endpoint.", null);
+                        "GithubClient", "Attempted to get invalid Api endpoint.", null);
         }
         return toReturn;
     }

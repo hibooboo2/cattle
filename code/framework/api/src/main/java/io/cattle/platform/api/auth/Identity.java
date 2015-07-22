@@ -32,6 +32,11 @@ public class Identity {
     }
 
     @Field(required = false, nullable = true)
+    public String getAll(){
+        return null;
+    }
+
+    @Field(required = false, nullable = true)
     public String getId() {
         return kind + ':' + externalId;
     }

@@ -107,7 +107,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager implements 
         List<String> appendedList = new ArrayList<>();
 
         for (String username : usernames) {
-            GithubAccountInfo userInfo = client.getUserIdByName(username);
+            GithubAccountInfo userInfo = client.getGithubUserByName(username);
             if (userInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidUsername", "Invalid username: " + username, null);
             }
@@ -122,7 +122,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager implements 
         }
         List<String> appendedList = new ArrayList<>();
         for (String org : orgs) {
-            GithubAccountInfo orgInfo = client.getOrgIdByName(org);
+            GithubAccountInfo orgInfo = client.getGithubOrgByName(org);
             if (orgInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
             }

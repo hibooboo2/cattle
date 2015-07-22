@@ -38,12 +38,12 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
         GithubAccountInfo githubAccountInfo;
         switch (identity.getKind()) {
             case GithubConstants.USER_SCOPE:
-                githubAccountInfo = githubClient.getUserIdByName(identity.getExternalId());
+                githubAccountInfo = githubClient.getGithubUserByName(identity.getExternalId());
                 id = githubAccountInfo.getAccountId();
                 name = githubAccountInfo.getAccountName();
                 return new Identity(GithubConstants.USER_SCOPE, id, name);
             case GithubConstants.ORG_SCOPE:
-                githubAccountInfo = githubClient.getOrgIdByName(identity.getExternalId());
+                githubAccountInfo = githubClient.getGithubOrgByName(identity.getExternalId());
                 id = githubAccountInfo.getAccountId();
                 name = githubAccountInfo.getAccountName();
                 return new Identity(GithubConstants.ORG_SCOPE, id, name);
@@ -84,10 +84,12 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
             } catch (ClientVisibleException e) {
                 if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
                         !e.getDetail().contains("401")) {
-                    throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.JWT_CREATION_FAILED, "", null);
+                    throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                            GithubConstants.JWT_CREATION_FAILED, "", null);
                 }
             } catch (IOException e) {
-                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.JWT_CREATION_FAILED, "", null);
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                        GithubConstants.JWT_CREATION_FAILED, "", null);
             }
         }
         if (jwt != null && !jwt.isEmpty()) {

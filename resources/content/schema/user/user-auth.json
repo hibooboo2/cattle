@@ -144,6 +144,7 @@
         "identity.kind": "r",
         "identity.profilePicture": "r",
         "identity.profileUrl": "r",
+        "identity.all": "r",
 
         "image" : "r",
 
