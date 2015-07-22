@@ -40,7 +40,7 @@ def test_search_identity_name_like(admin_user_client):
         name = name_format.format(name_base, rand_name)
         names.append(name)
         create_context(admin_user_client, name=name)
-    identities = admin_user_client.list_identity(name_like=name_base)
+    identities = admin_user_client.list_identity(all=name_base)
     assert len(identities) == 5
     assert len(names) == 5
     found = 0

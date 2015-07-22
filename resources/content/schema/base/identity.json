@@ -2,8 +2,12 @@
   "collectionFilters": {
     "name": {
       "modifiers": [
-        "eq",
-        "like"
+        "eq"
+      ]
+    },
+    "all": {
+      "modifiers": [
+        "eq"
       ]
     }
   }

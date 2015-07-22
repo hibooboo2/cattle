@@ -26,8 +26,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
-    private static final String LOGIN = "login";
-
     @Inject
     GithubClient githubClient;
 
@@ -88,7 +86,29 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
     }
 
     private List<Identity> searchGroups(String groupName, boolean exactMatch) {
-        return new ArrayList<>();
+        List<Identity> identities = new ArrayList<>();
+        if (exactMatch) {
+            GithubAccountInfo group;
+            try {
+                group =  githubClient.getGithubOrgByName(groupName);
+                if (group == null){
+                    return identities;
+                }
+            } catch (ClientVisibleException e) {
+                return identities;
+            }
+            Identity identity = group.toIdentity(GithubConstants.ORG_SCOPE);
+            identities.add(identity);
+            return identities;
+        }
+        String url = githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + groupName + "+type:org";
+        List<Map<String, Object>> results = searchGithub(url);
+        for (Map<String, Object> user: results){
+            identities.add(new Identity(GithubConstants.ORG_SCOPE, String.valueOf(user.get("id")),
+                    (String) user.get(GithubConstants.LOGIN), (String) user.get(GithubConstants.PROFILE_URL),
+                    (String) user.get(GithubConstants.PROFILE_PICTURE)));
+        }
+        return identities;
     }
 
     @SuppressWarnings("unchecked")
@@ -97,7 +117,7 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         if (exactMatch) {
             GithubAccountInfo user;
             try {
-                user =  githubClient.getUserIdByName(userName);
+                user =  githubClient.getGithubUserByName(userName);
             } catch (ClientVisibleException e) {
                 return identities;
             }
@@ -105,10 +125,19 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
             identities.add(identity);
             return identities;
         }
-        HttpResponse res;
-        List<Map<String, Object>> x;
+        String url = githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + userName + "+type:user";
+        List<Map<String, Object>> results = searchGithub(url);
+        for (Map<String, Object> user: results){
+            identities.add(new Identity(GithubConstants.USER_SCOPE, String.valueOf(user.get("id")),
+                    (String) user.get(GithubConstants.LOGIN), (String) user.get(GithubConstants.PROFILE_URL),
+                    (String) user.get(GithubConstants.PROFILE_PICTURE)));
+        }
+        return identities;
+    }
+
+    private List<Map<String, Object>> searchGithub(String url) {
         try {
-            res = Request.Get(githubClient.getURL(GithubClientEndpoints.USER_SEARCH) + userName)
+            HttpResponse res = Request.Get(url)
                     .addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
                             ("Accept", "application/json").execute().returnResponse();
             int statusCode = res.getStatusLine().getStatusCode();
@@ -117,16 +146,11 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
             }
             //TODO:Finish implementing search.
             Map<String, Object> jsonData = jsonMapper.readValue(res.getEntity().getContent());
-            x =  (List<Map<String, Object>>) jsonData.get("items");
+            return (List<Map<String, Object>>) jsonData.get("items");
         } catch (IOException e) {
             //TODO: Propper Error Handling.
-            return identities;
+            return new ArrayList<>();
         }
-        for (Map<String, Object> user: x){
-            identities.add(new Identity(GithubConstants.USER_SCOPE, String.valueOf(user.get("id")),
-                    (String) user.get(LOGIN), (String) user.get("html_url"), (String) user.get("avatar_url")));
-        }
-        return identities;
     }
 
     @Override
@@ -162,12 +186,11 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
                     .addHeader(GithubConstants.AUTHORIZATION, "token " + gitHubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.GITHUB_ERROR,
-                        "Non-200 Response from Github", "Status code from Github: " + Integer.toString(statusCode));
+                githubClient.noGithub(statusCode);
             }
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
-            GithubAccountInfo org = githubClient.getOrgIdByName(githubClient.getTeamOrgById(id));
+            GithubAccountInfo org = githubClient.getGithubOrgByName(githubClient.getTeamOrgById(id));
             String accountId = ObjectUtils.toString(jsonData.get("id"));
             String accountName = ObjectUtils.toString(jsonData.get(GithubConstants.NAMEFIELD));
             String profilePicture = org.getProfilePicture();

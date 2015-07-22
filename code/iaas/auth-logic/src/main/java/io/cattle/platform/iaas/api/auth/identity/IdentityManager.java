@@ -4,7 +4,6 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -36,7 +35,11 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         }
         if (criteria.containsKey("name")) {
             Condition search = ((List<Condition>) criteria.get("name")).get(0);
-            return searchIdentites((String)search.getValue(), search.getConditionType().equals(ConditionType.EQ));
+            return searchIdentites((String)search.getValue(), true);
+        }
+        if (criteria.containsKey("all")) {
+            Condition search = ((List<Condition>) criteria.get("all")).get(0);
+            return searchIdentites((String)search.getValue(), false);
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         return refreshIdentities(policy.getIdentities());
