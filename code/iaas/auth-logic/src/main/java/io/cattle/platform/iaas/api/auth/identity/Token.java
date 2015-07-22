@@ -1,12 +1,12 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
-        import io.cattle.platform.api.auth.Identity;
-        import io.cattle.platform.iaas.api.auth.TokenUtils;
-        import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
-        import io.github.ibuildthecloud.gdapi.annotation.Field;
-        import io.github.ibuildthecloud.gdapi.annotation.Type;
+import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
+import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-        import java.util.List;
+import java.util.List;
 
 
 @Type(name = TokenUtils.TOKEN)
