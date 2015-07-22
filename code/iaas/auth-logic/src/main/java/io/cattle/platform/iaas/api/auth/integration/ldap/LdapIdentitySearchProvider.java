@@ -166,7 +166,8 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
     }
 
     @Override
-    public List<Identity> searchIdentities(String name, String scope) {
+    public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
+        //TODO:Implement Exact match vs none exact match.
         if (!isConfigured()){
             return new ArrayList<>();
         }
@@ -181,6 +182,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
     }
 
     private List<Identity> searchGroup(String name) {
+        //TODO: Implement group search.
         return new ArrayList<>();
     }
 

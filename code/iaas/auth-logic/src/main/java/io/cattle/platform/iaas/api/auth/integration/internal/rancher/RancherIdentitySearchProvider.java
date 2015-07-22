@@ -19,14 +19,21 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
     AuthDao authDao;
 
     @Override
-    public List<Identity> searchIdentities(String name, String scope) {
+    public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
         List<Identity> identities = new ArrayList<>();
         if (!scope.equalsIgnoreCase(ProjectConstants.RANCHER_ID)){
             return identities;
         }
-        List<Account> accounts = authDao.searchAccounts(name);
+        List<Account> accounts = new ArrayList<>();
+        if (exactMatch){
+            accounts.add(authDao.getByName(name));
+        } else {
+            accounts.addAll(authDao.searchAccounts(name));
+        }
         for(Account account: accounts){
-            identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
+            if (account != null) {
+                identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
+            }
         }
         return identities;
     }

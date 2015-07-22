@@ -47,4 +47,6 @@ public interface AuthDao {
     void ensureAllProjectsHaveNonRancherIdMembers(Identity identity);
 
     List<Account> searchAccounts(String name);
+
+    Account getByName(String name);
 }

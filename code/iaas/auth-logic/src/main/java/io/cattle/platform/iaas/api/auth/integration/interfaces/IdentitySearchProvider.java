@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface IdentitySearchProvider extends Configurable {
 
-    List<Identity> searchIdentities(String name);
+    List<Identity> searchIdentities(String name, boolean exactMatch);
 
-    List<Identity> searchIdentities(String name, String scope);
+    List<Identity> searchIdentities(String name, String scope, boolean exactMatch);
 
     Identity getIdentity(String id, String scope);
 
