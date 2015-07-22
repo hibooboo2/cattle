@@ -123,6 +123,7 @@ public class GithubTokenCreator implements TokenCreator {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
+        //LEGACY: Used for old Implementation of projects/ Idnetities. Remove when vincent changes to new api.
         return new Token(jwt, user.getName(), orgNames, teamsAccountInfo, SecurityConstants.SECURITY.get(),
                 GithubConstants.GITHUB_CLIENT_ID.get(), user.getKind(), SecurityConstants.AUTHPROVIDER.get(), accountId, new ArrayList<>(identities));
     }
