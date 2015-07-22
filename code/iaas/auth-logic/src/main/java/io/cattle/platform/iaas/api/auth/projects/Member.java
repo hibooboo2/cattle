@@ -62,7 +62,7 @@ public class Member  {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
+        return new HashCodeBuilder(15, 39)
                 .append(externalId)
                 .append(externalIdType)
                 .append(role)

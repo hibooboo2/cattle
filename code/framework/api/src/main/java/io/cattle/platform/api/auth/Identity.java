@@ -86,7 +86,7 @@ public class Identity {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(12, 42)
+        return new HashCodeBuilder(19, 43)
                 .append(externalId)
                 .append(kind)
                 .toHashCode();
