@@ -69,7 +69,7 @@
         <property name="identitySearchProviders" value="#{extensionManager.map('identity.search.provider')}" />
     </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.AuthConfigsManager" >
+    <bean class="io.cattle.platform.iaas.api.auth.AuthIntegrationManager" >
         <property name="authConfigManagers" value="#{extensionManager.map('auth.config.manager')}" />
     </bean>
 

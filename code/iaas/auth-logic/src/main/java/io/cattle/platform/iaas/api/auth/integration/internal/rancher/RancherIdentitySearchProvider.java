@@ -47,9 +47,7 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
     public Identity getIdentity(String id, String scope) {
         String accountId = ApiContext.getContext().getIdFormatter().parseId(id);
         Account account = authDao.getAccountById(Long.valueOf(accountId == null ? id : accountId));
-        if (account == null) {
-            return null;
-        } else if (account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
+        if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
             return null;
         }
         accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
