@@ -3,6 +3,10 @@ package io.cattle.platform.api.auth;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 @Type(name = "identity", pluralName = "identities")
 public class Identity {
 
@@ -67,29 +71,35 @@ public class Identity {
     }
 
     @Override
-    public String toString() {
-        return "Identity{" +
-                "id='" + getId() +'\'' +
-                "externalId=" + externalId + '\'' +
-                ", profilePicture='" + profilePicture + '\'' +
-                ", name='" + name + '\'' +
-                ", kind='" + getKind() + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
+
         Identity identity = (Identity) o;
-        if (externalId != null ? !externalId.equals(identity.externalId) : identity.externalId != null) return false;
-        return !(kind != null ? !kind.equals(identity.kind) : identity.kind != null);
+
+        return new EqualsBuilder()
+                .append(externalId, identity.externalId)
+                .append(kind, identity.kind)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = externalId != null ? externalId.hashCode() : 0;
-        result = 31 * result + (kind != null ? kind.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder(12, 42)
+                .append(externalId)
+                .append(kind)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("externalId", externalId)
+                .append("profilePicture", profilePicture)
+                .append("name", name)
+                .append("kind", kind)
+                .append("profileUrl", profileUrl)
+                .toString();
     }
 }

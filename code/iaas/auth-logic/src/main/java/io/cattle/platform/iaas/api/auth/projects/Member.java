@@ -3,6 +3,10 @@ package io.cattle.platform.iaas.api.auth.projects;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.ProjectMember;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class Member  {
 
     private String externalId;
@@ -40,31 +44,38 @@ public class Member  {
         return name;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
 
         Member member = (Member) o;
 
-        if (externalId != null ? !externalId.equals(member.externalId) : member.externalId != null)
-            return false;
-        if (externalIdType != null ? !externalIdType.equals(member.externalIdType) : member.externalIdType != null)
-            return false;
-        if (role != null ? !role.equals(member.role) : member.role != null)
-            return false;
-        return !(name != null ? !name.equals(member.name) : member.name != null);
-
+        return new EqualsBuilder()
+                .append(externalId, member.externalId)
+                .append(externalIdType, member.externalIdType)
+                .append(role, member.role)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = externalId != null ? externalId.hashCode() : 0;
-        result = 31 * result + (externalIdType != null ? externalIdType.hashCode() : 0);
-        result = 31 * result + (role != null ? role.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder(17, 37)
+                .append(externalId)
+                .append(externalIdType)
+                .append(role)
+                .toHashCode();
     }
 
-
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("externalId", externalId)
+                .append("externalIdType", externalIdType)
+                .append("role", role)
+                .append("name", name)
+                .toString();
+    }
 }
