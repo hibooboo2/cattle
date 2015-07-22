@@ -34,11 +34,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     int priority = Priority.DEFAULT;
     AchaiusPolicyOptionsFactory optionsFactory;
 
-    public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
-        Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
-        return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
-    }
-
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
@@ -87,6 +82,11 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         }
 
         return null;
+    }
+
+    public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
+        Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
+        return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 
     public List<SchemaFactory> getSchemaFactoryList() {
