@@ -34,6 +34,54 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
     @Inject
     LdapUtils ldapUtils;
 
+    @Override
+    public boolean isConfigured() {
+        return StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
+                StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
+                StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
+                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
+                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
+                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+    }
+
+    @Override
+    public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
+        //TODO:Implement Exact match vs none exact match.
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
+        switch (scope) {
+            case LdapConstants.USER_SCOPE:
+                return searchUser(name, exactMatch);
+            case LdapConstants.GROUP_SCOPE:
+                return searchGroup(name, exactMatch);
+            default:
+                return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Identity getIdentity(String distinguishedName, String scope) {
+        switch (scope) {
+            case LdapConstants.USER_SCOPE:
+                return getUser(distinguishedName);
+            case LdapConstants.GROUP_SCOPE:
+                return getGroup(distinguishedName);
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public List<String> scopesProvided() {
+        return Arrays.asList(LdapConstants.SCOPES);
+    }
+
+    @Override
+    public String getName() {
+        return LdapConstants.NAME;
+    }
+
     private LdapContext login(String username, String password) {
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_PRINCIPAL, username);
@@ -94,7 +142,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         Attributes userAttributes = result.getAttributes();
         Attribute memberOf = result.getAttributes().get("memberOf");
         try {
-            identities.add(getUser((String) userAttributes.get("distinguishedname").get()));
+            identities.add(getUser((String) userAttributes.get(LdapConstants.DN).get()));
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
                     Attributes attributes = context.getAttributes(memberOf.get(i).toString(), new String[]{"CN"});
@@ -155,38 +203,12 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
     }
 
-    @Override
-    public boolean isConfigured() {
-        return StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
-    }
-
-    @Override
-    public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
-        //TODO:Implement Exact match vs none exact match.
-        if (!isConfigured()){
-            return new ArrayList<>();
-        }
-        switch (scope) {
-            case LdapConstants.USER_SCOPE:
-                return searchUser(name);
-            case LdapConstants.GROUP_SCOPE:
-                return searchGroup(name);
-            default:
-                return new ArrayList<>();
-        }
-    }
-
-    private List<Identity> searchGroup(String name) {
+    private List<Identity> searchGroup(String name, boolean exactMatch) {
         //TODO: Implement group search.
         return new ArrayList<>();
     }
 
-    private List<Identity> searchUser(String name) {
+    private List<Identity> searchUser(String name, boolean exactMatch) {
         try {
             if (!isConfigured()){
                 return new ArrayList<>();
@@ -198,7 +220,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
             }
             Attributes attributes = result.getAttributes();
             String accountName = (String) attributes.get("name").get();
-            String externalId = (String) attributes.get("distinguishedname").get();
+            String externalId = (String) attributes.get(LdapConstants.DN).get();
             Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
             List<Identity> identities = new ArrayList<>();
             identities.add(identity);
@@ -209,24 +231,12 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
     }
 
-    @Override
-    public Identity getIdentity(String id, String scope) {
-        switch (scope) {
-            case LdapConstants.USER_SCOPE:
-                return getUser(id);
-            case LdapConstants.GROUP_SCOPE:
-                return getGroup(id);
-            default:
-                return null;
-        }
-    }
-
-    private Identity getUser(String id) {
+    private Identity getUser(String distinguishedName) {
         try {
             LdapContext context = getServiceContext();
-            Attributes search = context.getAttributes(new LdapName(id));
+            Attributes search = context.getAttributes(new LdapName(distinguishedName));
             String accountName = (String) search.get("cn").get();
-            String externalId = (String) search.get("distinguishedname").get();
+            String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
         } catch (NamingException e) {
             e.printStackTrace();
@@ -234,28 +244,18 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
     }
 
-    private Identity getGroup(String id) {
+    private Identity getGroup(String distinguishedName) {
         try {
             LdapContext context = getServiceContext();
-            Attributes search = context.getAttributes(new LdapName(id));
+            Attributes search = context.getAttributes(new LdapName(distinguishedName));
             String accountName = (String) search.get("name").get();
-            String externalId = (String) search.get("distinguishedname").get();
+            String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.GROUP_SCOPE, externalId, accountName);
         } catch (NamingException e) {
             e.printStackTrace();
             return null;
         }
 
-    }
-
-    @Override
-    public List<String> scopesProvided() {
-        return Arrays.asList(LdapConstants.SCOPES);
-    }
-
-    @Override
-    public String getName() {
-        return LdapConstants.NAME;
     }
 
     public LdapContext getServiceContext() {
