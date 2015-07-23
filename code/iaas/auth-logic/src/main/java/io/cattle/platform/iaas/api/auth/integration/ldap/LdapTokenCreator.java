@@ -87,7 +87,7 @@ public class LdapTokenCreator implements TokenCreator {
         jsonData.put(TokenUtils.TOKEN, LdapConstants.LDAP_JWT);
         jsonData.put(TokenUtils.ACCOUNT_ID, gotIdentity.getExternalId());
         jsonData.put(LdapConstants.USERNAME, username);
-        jsonData.put(LdapConstants.LDAPUSERID, gotIdentity.getExternalId());
+        jsonData.put(LdapConstants.LDAP_USER_ID, gotIdentity.getExternalId());
         List<String> groupsIdList = new ArrayList<>();
         for (Identity identity : identities) {
             groupsIdList.add(identity.getExternalId());

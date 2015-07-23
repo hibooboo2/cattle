@@ -63,12 +63,12 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
             loginDomain = (String) config.get(LdapConstants.ACCESSMODE);
         }
         String serviceAccountUsername = currentConfig.getServiceAccountUsername();
-        if (config.get(LdapConstants.SERVICEACCOUNTUSERNAME) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICEACCOUNTUSERNAME);
+        if (config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME);
         }
         String serviceAccountPassword = currentConfig.getServiceAccountPassword();
-        if (config.get(LdapConstants.SERVICEACCOUNTPASSWORD) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICEACCOUNTPASSWORD);
+        if (config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD);
         }
         boolean tls = currentConfig.getTls();
         if (config.get(LdapConstants.TLS) != null) {
@@ -123,8 +123,8 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.LOGIN_DOMAIN_SETTING, config.get(LdapConstants.LOGIN_DOMAIN));
         settingsUtils.changeSetting(LdapConstants.SEARCH_FIELD_USER_SETTING, config.get(LdapConstants.SEARCH_FIELD_USER));
         settingsUtils.changeSetting(LdapConstants.PORT_SETTING, config.get(LdapConstants.PORT));
-        settingsUtils.changeSetting(LdapConstants.SERIVCEACCOUNTUSERNAME_SETTING, config.get(LdapConstants.SERVICEACCOUNTUSERNAME));
-        settingsUtils.changeSetting(LdapConstants.SERVICEACCOUNTPASSWORD_SETTING, config.get(LdapConstants.SERVICEACCOUNTPASSWORD));
+        settingsUtils.changeSetting(LdapConstants.SERIVCE_ACCOUNT_USERNAME_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME));
+        settingsUtils.changeSetting(LdapConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD));
         settingsUtils.changeSetting(LdapConstants.TLS_SETTING, config.get(LdapConstants.TLS));
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
         if (config.get(SecurityConstants.ENABLED) != null && (boolean) config.get(SecurityConstants.ENABLED)){

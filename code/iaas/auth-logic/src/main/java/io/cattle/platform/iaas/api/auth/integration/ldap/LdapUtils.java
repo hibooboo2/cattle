@@ -41,7 +41,7 @@ public class LdapUtils extends TokenUtils {
             return identities;
         }
         List<String> groups = (List<String>) CollectionUtils.toList(jsonData.get(LdapConstants.LDAP_GROUPS));
-        identities.add(new Identity(LdapConstants.USER_SCOPE, (String) jsonData.get(LdapConstants.LDAPUSERID), (String) jsonData.get(LdapConstants.USERNAME)));
+        identities.add(new Identity(LdapConstants.USER_SCOPE, (String) jsonData.get(LdapConstants.LDAP_USER_ID), (String) jsonData.get(LdapConstants.USERNAME)));
         for (String group : groups) {
             identities.add(new Identity(LdapConstants.GROUP_SCOPE, group));
         }
