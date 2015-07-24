@@ -62,6 +62,9 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
     @Override
     public Identity getIdentity(String distinguishedName, String scope) {
+        if (!isConfigured()){
+            return null;
+        }
         switch (scope) {
             case LdapConstants.USER_SCOPE:
                 return getUser(distinguishedName);
@@ -74,6 +77,9 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
     @Override
     public List<String> scopesProvided() {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
         return Arrays.asList(LdapConstants.SCOPES);
     }
 
@@ -101,18 +107,18 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
     private SearchResult userRecord(LdapContext context, String domain, String name) {
         SearchControls controls = new SearchControls();
-        name = getSAMname(name);
+        name = getSamName(name);
         controls.setSearchScope(SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> renum;
+        NamingEnumeration<SearchResult> results;
         try {
             String query = '(' + LdapConstants.SEARCH_FIELD.get() + '=' + name + ')';
-            renum = context.search(toDC(domain), query, controls);
+            results = context.search(toDC(domain), query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
             return null;
         }
         try {
-            if (!renum.hasMore()) {
+            if (!results.hasMore()) {
                 logger.info("Cannot locate user information for " + name);
                 return null;
             }
@@ -122,8 +128,8 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
         SearchResult result;
         try {
-            result = renum.next();
-            if (renum.hasMoreElements()) {
+            result = results.next();
+            if (results.hasMoreElements()) {
                 logger.error("More than one result.");
                 return null;
             }
@@ -134,7 +140,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         return result;
     }
 
-    private Set<Identity> getIdentities(SearchResult result, LdapContext context) {
+    private Set<Identity> getIdentities(SearchResult result) {
         Set<Identity> identities = new HashSet<>();
         if (result == null) {
             return identities;
@@ -145,10 +151,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
             identities.add(getUser((String) userAttributes.get(LdapConstants.DN).get()));
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
-                    Attributes attributes = context.getAttributes(memberOf.get(i).toString());
-                    identities.add(new Identity(LdapConstants.GROUP_SCOPE,
-                            attributes.get(LdapConstants.DN).get().toString(),
-                            attributes.get(LdapConstants.NAME_FIELD).get().toString()));
+                    identities.add(getGroup(memberOf.get(i).toString()));
                 }
             }
             return identities;
@@ -173,7 +176,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
             return new HashSet<>();
         }
         LdapContext userContext = login(getUserExternalId(username), password);
-        Set<Identity> identities = getIdentities(userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username), userContext);
+        Set<Identity> identities = getIdentities(userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username));
         try {
             userContext.close();
         } catch (NamingException e) {
@@ -193,7 +196,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         }
     }
 
-    public String getSAMname(String username) {
+    public String getSamName(String username) {
         if (!isConfigured()) {
             return null;
         }
@@ -211,22 +214,23 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
 
     private List<Identity> searchUser(String name, boolean exactMatch) {
         try {
-            if (!isConfigured()){
-                return new ArrayList<>();
-            }
             LdapContext context = getServiceContext();
             SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), name);
             if (result == null) {
                 return new ArrayList<>();
             }
             Attributes attributes = result.getAttributes();
-            String accountName = (String) attributes.get(LdapConstants.NAME_FIELD).get();
+            if (!isType(attributes, LdapConstants.OBJECT_TYPE_USER)){
+                return new ArrayList<>();
+            }
+            String accountName = (String) attributes.get(LdapConstants.NAME_FIELD_USER).get();
             String externalId = (String) attributes.get(LdapConstants.DN).get();
             Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
             List<Identity> identities = new ArrayList<>();
             identities.add(identity);
             return identities;
         } catch (NamingException e) {
+            logger.error("Failed to search for user: " + name, e);
             return new ArrayList<>();
         }
     }
@@ -234,31 +238,55 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
     private Identity getUser(String distinguishedName) {
         try {
             LdapContext context = getServiceContext();
+            if (context == null) {
+                return null;
+            }
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
-            String accountName = (String) search.get(LdapConstants.NAME_FIELD).get();
+            if (!isType(search, LdapConstants.OBJECT_TYPE_USER)){
+                return null;
+            }
+            String accountName = (String) search.get(LdapConstants.NAME_FIELD_USER).get();
             String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
         } catch (NamingException e) {
-            e.printStackTrace();
+            logger.error("Failed to get user.", e);
             return null;
         }
+    }
+
+    private boolean isType(Attributes search, String type) throws NamingException {
+        NamingEnumeration<?> objectClass = search.get(LdapConstants.OBJECT_CLASS).getAll();
+        boolean isType = false;
+        while (objectClass.hasMoreElements()) {
+            Object object = objectClass.next();
+            if ((object.toString()).equalsIgnoreCase(type)){
+                isType = true;
+            }
+        }
+        return isType;
     }
 
     private Identity getGroup(String distinguishedName) {
         try {
             LdapContext context = getServiceContext();
+            if (context == null){
+                return null;
+            }
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
-            String accountName = (String) search.get(LdapConstants.NAME_FIELD).get();
+            if (!isType(search, LdapConstants.OBJECT_TYPE_GROUP)){
+                return null;
+            }
+            String accountName = (String) search.get(LdapConstants.NAME_FIELD_GROUP).get();
             String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.GROUP_SCOPE, externalId, accountName);
         } catch (NamingException e) {
-            e.printStackTrace();
+            logger.error("Failed to get group.", e);
             return null;
         }
 
     }
 
-    public LdapContext getServiceContext() {
+    private LdapContext getServiceContext() {
         if (isConfigured()) {
             return login(getUserExternalId(LdapConstants.SERVICEACCOUNT_USER.get()), LdapConstants.SERVICEACCOUNT_PASSWORD.get());
         } else {

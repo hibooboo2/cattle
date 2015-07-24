@@ -14,7 +14,6 @@ public class LdapConstants {
     public static final String ACCESSMODE = "accessMode";
     public static final String ACCOUNT_ID = NAME + "_AccountId";
     public static final String CONFIG = NAME + "config";
-    public static final String DN = "distinguishedname";
     public static final String DOMAIN = "domain";
     public static final String LDAP_ACCESS_TOKEN = NAME + "AccessToken";
     public static final String LDAP_GROUPS = NAME + "_groups";
@@ -57,6 +56,16 @@ public class LdapConstants {
     public static final DynamicStringProperty SEARCH_FIELD = ArchaiusUtil.getString(SEARCH_FIELD_USER_SETTING);
     public static final String SEARCH_FIELD_USER = "searchFieldUser";
     public static final String MANAGER = NAME + "Manager";
-    public static final String NAME_FIELD = "name";
+
+
+    //Should these be configurable settings?
+    public static final String NAME_FIELD_USER = "name";
+    public static final String NAME_FIELD_GROUP = "name";
     public static final String MEMBER_OF = "memberOf";
+    public static final String OBJECT_CLASS = "objectClass";
+    public static final String OBJECT_TYPE_GROUP = "group";
+    public static final String OBJECT_TYPE_USER = "person";
+    public static final String SEARCH_FIELD_GROUP = "sAMAccountName";
+    public static final String DN = "distinguishedname";
+
 }
