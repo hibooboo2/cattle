@@ -9,7 +9,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class LdapAuthImpl implements AccountLookup, Priority {
+public class LdapAuthImpl extends LdapConfigurable implements AccountLookup, Priority {
 
     @Inject
     LdapUtils ldapUtils;
@@ -31,5 +31,10 @@ public class LdapAuthImpl implements AccountLookup, Priority {
     @Override
     public int getPriority() {
         return Priority.PRE;
+    }
+
+    @Override
+    public String getName() {
+        return "LdapAuthImpl";
     }
 }

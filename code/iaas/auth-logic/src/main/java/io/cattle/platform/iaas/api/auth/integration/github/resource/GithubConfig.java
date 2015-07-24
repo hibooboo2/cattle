@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.github.resource;
 
+import io.cattle.platform.iaas.api.auth.integration.github.GithubConfigurable;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AuthConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
@@ -8,7 +9,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 import java.util.List;
 
 @Type(name = GithubConstants.CONFIG)
-public class GithubConfig implements AuthConfig{
+public class GithubConfig extends GithubConfigurable implements AuthConfig{
 
     private String hostname;
     private String scheme;
@@ -68,11 +69,6 @@ public class GithubConfig implements AuthConfig{
     @Field(nullable = true)
     public String getScheme() {
         return scheme;
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return enabled;
     }
 
     @Override

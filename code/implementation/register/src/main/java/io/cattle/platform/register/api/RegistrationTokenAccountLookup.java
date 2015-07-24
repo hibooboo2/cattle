@@ -54,4 +54,13 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
         this.tokenManager = tokenManager;
     }
 
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "RegistrationTokenAccountLookup";
+    }
 }

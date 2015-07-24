@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.netflix.config.DynamicLongProperty;
 
-public class LdapTokenCreator implements TokenCreator {
+public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
 
     private static final Log logger = LogFactory.getLog(LdapTokenCreator.class);
     private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
@@ -116,11 +116,6 @@ public class LdapTokenCreator implements TokenCreator {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         return getLdapToken(split[0], split[1]);
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return ldapIdentitySearchProvider.isConfigured();
     }
 
     @Override

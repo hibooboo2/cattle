@@ -19,7 +19,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class GithubIdentityTransformationHandler implements IdentityTransformationHandler {
+public class GithubIdentityTransformationHandler extends GithubConfigurable implements IdentityTransformationHandler {
 
 
     @Inject
@@ -71,7 +71,7 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!githubClient.githubConfigured()) {
+        if (!isConfigured()) {
             return new HashSet<>();
         }
         ApiRequest request = ApiContext.getContext().getApiRequest();
@@ -98,5 +98,10 @@ public class GithubIdentityTransformationHandler implements IdentityTransformati
             return githubUtils.getIdentities();
         }
         return new HashSet<>();
+    }
+
+    @Override
+    public String getName() {
+        return GithubConstants.TRANSFORMATION_HANDLER;
     }
 }

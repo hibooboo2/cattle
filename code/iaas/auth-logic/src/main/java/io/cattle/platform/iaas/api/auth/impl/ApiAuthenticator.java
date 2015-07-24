@@ -115,9 +115,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         Account account = null;
 
         for (AccountLookup lookup : accountLookups) {
-            account = lookup.getAccount(request);
-            if (account != null) {
-                break;
+            if (lookup.isConfigured()){
+                account = lookup.getAccount(request);
+                if (account != null) {
+                    break;
+                }
             }
         }
 

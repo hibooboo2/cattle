@@ -1,10 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClientEndpoints;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -24,7 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.message.BasicNameValuePair;
 
-public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider {
+public class GithubIdentitySearchProvider extends GithubConfigurable implements IdentitySearchProvider {
 
     @Inject
     GithubClient githubClient;
@@ -61,6 +61,17 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
         }
 
         return (String) jsonData.get(GithubConstants.ACCESS_TOKEN);
+    }
+
+    public List<Identity> searchIdentities(String name, boolean exactMatch) {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
+        List<Identity> identities = new ArrayList<>();
+        for (String scope : scopesProvided()) {
+            identities.addAll(searchIdentities(name, scope, exactMatch));
+        }
+        return identities;
     }
 
     @Override
@@ -233,11 +244,6 @@ public class GithubIdentitySearchProvider extends AbstractIdentitySearchProvider
             return new ArrayList<>();
         }
         return Arrays.asList(GithubConstants.SCOPES);
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return githubClient.githubConfigured();
     }
 
     @Override

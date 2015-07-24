@@ -49,4 +49,14 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
         identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
         return identities;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "RancherIdentityTransformationHandler";
+    }
 }

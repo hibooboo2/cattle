@@ -39,4 +39,14 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
     public int getPriority() {
         return Integer.MAX_VALUE;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "AdminAuthLookUp";
+    }
 }

@@ -140,8 +140,4 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         return LdapConstants.MANAGER;
     }
 
-    @Override
-    public boolean isConfigured() {
-        return ldapClient.isConfigured();
-    }
 }
