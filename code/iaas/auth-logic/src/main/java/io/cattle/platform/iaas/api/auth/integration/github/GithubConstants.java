@@ -61,4 +61,6 @@ public class GithubConstants {
     public static final String MANAGER = NAME + "Manager";
     public static final String SEARCH_PROVIDER = NAME + "Provider";
     public static final String TOKEN_CREATOR = NAME + "TokenCreator";
+    public static final String TRANSFORMATION_HANDLER = NAME + "TransformationHandler";
+    public static final String ACCOUNT_LOOKUP = NAME + "AccountLookUp";
 }

@@ -7,7 +7,7 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransform
 import java.util.Set;
 import javax.inject.Inject;
 
-public class LdapIdentityTransformationHandler implements IdentityTransformationHandler {
+public class LdapIdentityTransformationHandler extends LdapConfigurable implements IdentityTransformationHandler {
 
     @Inject
     LdapIdentitySearchProvider ldapIdentitySearchProvider;
@@ -44,5 +44,10 @@ public class LdapIdentityTransformationHandler implements IdentityTransformation
     @Override
     public Set<Identity> getIdentities(Account account) {
         return ldapUtils.getIdentities();
+    }
+
+    @Override
+    public String getName() {
+        return "LdapIdentityTransformationHandler";
     }
 }

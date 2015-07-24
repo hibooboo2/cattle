@@ -35,13 +35,15 @@ public class LdapUtils extends TokenUtils {
         return isAllowed(identities(jsonData));
     }
 
+    @SuppressWarnings("unchecked")
     protected Set<Identity> identities(Map<String, Object> jsonData) {
         Set<Identity> identities = new HashSet<>();
         if (jsonData == null) {
             return identities;
         }
         List<String> groups = (List<String>) CollectionUtils.toList(jsonData.get(LdapConstants.LDAP_GROUPS));
-        identities.add(new Identity(LdapConstants.USER_SCOPE, (String) jsonData.get(LdapConstants.LDAP_USER_ID), (String) jsonData.get(LdapConstants.USERNAME)));
+        identities.add(new Identity(LdapConstants.USER_SCOPE, (String) jsonData.get(LdapConstants.LDAP_USER_ID),
+                (String) jsonData.get(LdapConstants.USERNAME)));
         for (String group : groups) {
             identities.add(new Identity(LdapConstants.GROUP_SCOPE, group));
         }

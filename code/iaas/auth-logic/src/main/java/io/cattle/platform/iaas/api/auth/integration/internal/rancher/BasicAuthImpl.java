@@ -123,4 +123,13 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         this.authDao = authDao;
     }
 
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "BasicAuthAccountLookUp";
+    }
 }

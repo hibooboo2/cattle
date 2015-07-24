@@ -85,7 +85,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     private List<Identity> searchIdentites(String name, boolean exactMatch) {
         Set<Identity> identities = new HashSet<>();
         for (IdentitySearchProvider identitySearchProvider : identitySearchProviders.values()) {
-            identities.addAll(identitySearchProvider.searchIdentities(name, exactMatch));
+            if (identitySearchProvider.isConfigured()) {
+                identities.addAll(identitySearchProvider.searchIdentities(name, exactMatch));
+            }
         }
         for (Identity identity : identities) {
             authorize(identity);

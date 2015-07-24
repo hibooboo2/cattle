@@ -192,8 +192,4 @@ public class GithubConfigManager extends AbstractNoOpResourceManager implements 
         return GithubConstants.MANAGER;
     }
 
-    @Override
-    public boolean isConfigured() {
-        return client.githubConfigured();
-    }
 }

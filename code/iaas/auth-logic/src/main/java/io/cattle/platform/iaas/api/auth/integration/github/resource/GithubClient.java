@@ -221,12 +221,4 @@ public class GithubClient {
         return toReturn;
     }
 
-    public boolean githubConfigured() {
-        boolean githubConfigured = false;
-        if (StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) && StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get())) {
-            githubConfigured = true;
-        }
-        return githubConfigured;
-    }
-
 }

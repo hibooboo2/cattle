@@ -3,7 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -24,26 +24,26 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.sun.jndi.ldap.LdapCtxFactory;
 
-public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
+public class LdapIdentitySearchProvider extends LdapConfigurable implements IdentitySearchProvider {
 
     private static final Log logger = LogFactory.getLog(LdapIdentitySearchProvider.class);
     @Inject
     LdapUtils ldapUtils;
 
-    @Override
-    public boolean isConfigured() {
-        return StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+    public List<Identity> searchIdentities(String name, boolean exactMatch) {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
+        List<Identity> identities = new ArrayList<>();
+        for (String scope : scopesProvided()) {
+            identities.addAll(searchIdentities(name, scope, exactMatch));
+        }
+        return identities;
     }
 
     @Override

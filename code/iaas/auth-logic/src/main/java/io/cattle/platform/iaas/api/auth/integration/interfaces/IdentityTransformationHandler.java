@@ -5,7 +5,7 @@ import io.cattle.platform.core.model.Account;
 
 import java.util.Set;
 
-public interface IdentityTransformationHandler {
+public interface IdentityTransformationHandler extends Configurable {
 
     Identity transform(Identity identity);
 

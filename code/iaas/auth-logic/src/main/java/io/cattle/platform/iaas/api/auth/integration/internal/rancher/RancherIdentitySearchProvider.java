@@ -5,7 +5,7 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 
-public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvider {
+public class RancherIdentitySearchProvider implements IdentitySearchProvider {
 
     @Inject
     AuthDao authDao;
@@ -25,7 +25,7 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
         List<Identity> identities = new ArrayList<>();
-        if (!scope.equalsIgnoreCase(ProjectConstants.RANCHER_ID)){
+        if (!scopesProvided().contains(scope)){
             return identities;
         }
         List<Account> accounts = new ArrayList<>();
@@ -39,6 +39,17 @@ public class RancherIdentitySearchProvider extends AbstractIdentitySearchProvide
                 String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
                 identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName()));
             }
+        }
+        return identities;
+    }
+
+    public List<Identity> searchIdentities(String name, boolean exactMatch) {
+        if (!isConfigured()){
+            return new ArrayList<>();
+        }
+        List<Identity> identities = new ArrayList<>();
+        for (String scope : scopesProvided()) {
+            identities.addAll(searchIdentities(name, scope, exactMatch));
         }
         return identities;
     }

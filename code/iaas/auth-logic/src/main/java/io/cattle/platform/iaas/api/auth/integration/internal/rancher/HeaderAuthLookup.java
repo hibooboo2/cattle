@@ -89,4 +89,14 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
     public void setAdminAuthProvider(AuthorizationProvider adminAuthProvider) {
         this.adminAuthProvider = adminAuthProvider;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "HeaderAuthLookUp";
+    }
 }

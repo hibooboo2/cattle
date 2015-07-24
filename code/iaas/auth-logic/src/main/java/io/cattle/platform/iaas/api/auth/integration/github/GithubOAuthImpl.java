@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class GithubOAuthImpl implements AccountLookup, Priority {
+public class GithubOAuthImpl extends GithubConfigurable implements AccountLookup, Priority {
 
     @Inject
     private GithubUtils githubUtils;
@@ -41,5 +41,10 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
     @Override
     public boolean challenge(ApiRequest request) {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return GithubConstants.ACCOUNT_LOOKUP;
     }
 }

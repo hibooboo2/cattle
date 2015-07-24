@@ -35,4 +35,13 @@ public class TokenAccountLookup implements AccountLookup, Priority {
         return false;
     }
 
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "TokenAccountLookUp";
+    }
 }

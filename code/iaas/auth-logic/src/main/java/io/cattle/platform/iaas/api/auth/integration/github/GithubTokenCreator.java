@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import com.netflix.config.DynamicLongProperty;
 
-public class GithubTokenCreator implements TokenCreator {
+public class GithubTokenCreator extends GithubConfigurable implements TokenCreator {
 
     private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     @Inject
@@ -134,12 +134,6 @@ public class GithubTokenCreator implements TokenCreator {
         String code = ObjectUtils.toString(requestBody.get(GithubConstants.GITHUB_REQUEST_CODE));
         String accessToken = githubIdentitySearchProvider.getAccessToken(code);
         return getGithubToken(accessToken);
-    }
-
-
-    @Override
-    public boolean isConfigured() {
-        return githubClient.githubConfigured();
     }
 
     @Override
