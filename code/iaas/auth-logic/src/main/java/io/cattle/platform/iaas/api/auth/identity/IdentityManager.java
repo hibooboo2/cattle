@@ -46,7 +46,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     }
 
     /**
-     * This method is used to update the cached identites from the policy, which are generated
+     * This method is used to update the cached identities from the policy, which are generated
      * from the users current token, which is only required to be updated once every
      * 16 hours.
      *

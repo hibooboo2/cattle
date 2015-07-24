@@ -76,10 +76,11 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             } else {
                 throw exceptions.get(0);
             }
-        } else {
+        } else if (token == null){
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                     "AuthorizationProvider", "No Authorization Provider Configured.", null);
         }
+        return token;
     }
 
     @Override
