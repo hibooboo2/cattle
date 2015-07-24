@@ -62,6 +62,7 @@ public class LdapTokenCreator implements TokenCreator {
         for (Identity identity: identities){
             if (identity.getKind().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
                 gotIdentity = identity;
+                break;
             }
         }
         if (gotIdentity == null) {
@@ -90,10 +91,11 @@ public class LdapTokenCreator implements TokenCreator {
         jsonData.put(LdapConstants.LDAP_USER_ID, gotIdentity.getExternalId());
         List<String> groupsIdList = new ArrayList<>();
         for (Identity identity : identities) {
-            groupsIdList.add(identity.getExternalId());
+            if (identity.getKind().equalsIgnoreCase(LdapConstants.GROUP_SCOPE)) {
+                groupsIdList.add(identity.getExternalId());
+            }
         }
         jsonData.put(LdapConstants.LDAP_GROUPS, groupsIdList);
-        objectManager.persist(account);
         account = objectManager.reload(account);
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
