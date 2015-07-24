@@ -54,6 +54,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         Token token = null;
         List<ClientVisibleException> exceptions = new ArrayList<>();
         for (TokenCreator tokenCreator : tokenCreators) {
+            if (!tokenCreator.isConfigured()){
+                continue;
+            }
             try {
                 token = tokenCreator.createToken(request);
             } catch (ClientVisibleException e) {
@@ -67,9 +70,14 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             for (Exception e : exceptions) {
                 e.printStackTrace();
             }
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "AuthorizationProvider", "Either No Authorzation Provider configured or " +
-                    "invalid code.",
-                    null);
+            if (exceptions.size() != 1) {
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "AuthorizationProvider", "Either No Authorization Provider configured or " +
+
+                        "invalid code.",
+                        null);
+            } else {
+                throw exceptions.get(0);
+            }
         }
         return token;
     }

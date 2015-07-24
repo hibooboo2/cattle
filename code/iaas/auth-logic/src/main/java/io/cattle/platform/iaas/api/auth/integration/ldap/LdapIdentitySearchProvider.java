@@ -4,6 +4,8 @@ import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.identity.AbstractIdentitySearchProvider;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +177,12 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         if (!isConfigured()) {
             return new HashSet<>();
         }
-        LdapContext userContext = login(getUserExternalId(username), password);
+        LdapContext userContext;
+        try {
+            userContext = login(getUserExternalId(username), password);
+        } catch (RuntimeException e) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
         Set<Identity> identities = getIdentities(userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username));
         try {
             userContext.close();
