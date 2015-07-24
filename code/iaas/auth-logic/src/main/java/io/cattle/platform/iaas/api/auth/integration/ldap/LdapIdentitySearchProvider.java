@@ -140,14 +140,15 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
             return identities;
         }
         Attributes userAttributes = result.getAttributes();
-        Attribute memberOf = result.getAttributes().get("memberOf");
+        Attribute memberOf = result.getAttributes().get(LdapConstants.MEMBER_OF);
         try {
             identities.add(getUser((String) userAttributes.get(LdapConstants.DN).get()));
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
-                    Attributes attributes = context.getAttributes(memberOf.get(i).toString(), new String[]{"CN"});
-                    Attribute commonName = attributes.get("CN");
-                    identities.add(new Identity(LdapConstants.GROUP_SCOPE, memberOf.get(i).toString(), commonName.get().toString()));
+                    Attributes attributes = context.getAttributes(memberOf.get(i).toString());
+                    identities.add(new Identity(LdapConstants.GROUP_SCOPE,
+                            attributes.get(LdapConstants.DN).get().toString(),
+                            attributes.get(LdapConstants.NAME_FIELD).get().toString()));
                 }
             }
             return identities;
@@ -219,15 +220,14 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
                 return new ArrayList<>();
             }
             Attributes attributes = result.getAttributes();
-            String accountName = (String) attributes.get("name").get();
+            String accountName = (String) attributes.get(LdapConstants.NAME_FIELD).get();
             String externalId = (String) attributes.get(LdapConstants.DN).get();
             Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
             List<Identity> identities = new ArrayList<>();
             identities.add(identity);
             return identities;
         } catch (NamingException e) {
-            e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
     }
 
@@ -235,7 +235,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         try {
             LdapContext context = getServiceContext();
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
-            String accountName = (String) search.get("cn").get();
+            String accountName = (String) search.get(LdapConstants.NAME_FIELD).get();
             String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
         } catch (NamingException e) {
@@ -248,7 +248,7 @@ public class LdapIdentitySearchProvider extends AbstractIdentitySearchProvider {
         try {
             LdapContext context = getServiceContext();
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
-            String accountName = (String) search.get("name").get();
+            String accountName = (String) search.get(LdapConstants.NAME_FIELD).get();
             String externalId = (String) search.get(LdapConstants.DN).get();
             return new Identity(LdapConstants.GROUP_SCOPE, externalId, accountName);
         } catch (NamingException e) {
