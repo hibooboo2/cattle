@@ -68,4 +68,6 @@ public class LdapConstants {
     public static final String SEARCH_FIELD_GROUP = "sAMAccountName";
     public static final String DN = "distinguishedname";
 
+    public static final int HAS_ACCESS_BIT = 514;
+    public static final String USER_ACCOUNT_CONTROL_FIELD = "userAccountControl";
 }

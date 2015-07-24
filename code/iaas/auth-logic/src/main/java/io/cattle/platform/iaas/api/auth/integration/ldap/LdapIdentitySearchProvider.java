@@ -113,7 +113,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
-            String query = '(' + LdapConstants.SEARCH_FIELD.get() + '=' + name + ')';
+            String query = "(" + LdapConstants.SEARCH_FIELD.get() + '=' + name + ")";
             results = context.search(toDC(domain), query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
@@ -135,6 +135,12 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 logger.error("More than one result.");
                 return null;
             }
+            int permission = Integer.parseInt(result.getAttributes().get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get().toString());
+            permission = permission & LdapConstants.HAS_ACCESS_BIT;
+            if (permission == LdapConstants.HAS_ACCESS_BIT)
+            {
+                return null;
+            }
         } catch (NamingException e) {
             logger.error("No results. when searching. " + name);
             return null;
@@ -150,6 +156,10 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         Attributes userAttributes = result.getAttributes();
         Attribute memberOf = result.getAttributes().get(LdapConstants.MEMBER_OF);
         try {
+            if (!isType(userAttributes, LdapConstants.OBJECT_TYPE_USER))
+            {
+                return identities;
+            }
             identities.add(getUser((String) userAttributes.get(LdapConstants.DN).get()));
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
@@ -250,6 +260,12 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             }
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
             if (!isType(search, LdapConstants.OBJECT_TYPE_USER)){
+                return null;
+            }
+            int permission = Integer.parseInt(search.get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get().toString());
+            permission = permission & LdapConstants.HAS_ACCESS_BIT;
+            if (permission == LdapConstants.HAS_ACCESS_BIT)
+            {
                 return null;
             }
             String accountName = (String) search.get(LdapConstants.NAME_FIELD_USER).get();
