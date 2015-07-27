@@ -35,36 +35,6 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     @Inject
     AdminAuthLookUp adminAuthLookUp;
 
-    public static String[] getUsernamePassword(ApiRequest request) {
-        return getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
-    }
-
-    public static String[] getUsernamePassword(String auth) {
-        if (auth == null)
-            return null;
-
-        String[] parts = StringUtils.split(auth);
-
-        if (parts.length != 2) {
-            return null;
-        }
-
-        if (!parts[0].equalsIgnoreCase(BASIC))
-            return null;
-
-        try {
-            String text = new String(Base64.decodeBase64(parts[1]), "UTF-8");
-            int i = text.indexOf(":");
-            if (i == -1) {
-                return null;
-            }
-
-            return new String[]{text.substring(0, i), text.substring(i + 1)};
-        } catch (UnsupportedEncodingException e) {
-            return null;
-        }
-    }
-
     @Override
     public Account getAccount(ApiRequest request) {
         String[] auth = getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
@@ -107,6 +77,37 @@ public class BasicAuthImpl implements AccountLookup, Priority {
 
     protected String getRealm(ApiRequest request) {
         return REALM.get();
+    }
+
+
+    public static String[] getUsernamePassword(ApiRequest request) {
+        return getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
+    }
+
+    public static String[] getUsernamePassword(String auth) {
+        if (auth == null)
+            return null;
+
+        String[] parts = StringUtils.split(auth);
+
+        if (parts.length != 2) {
+            return null;
+        }
+
+        if (!parts[0].equalsIgnoreCase(BASIC))
+            return null;
+
+        try {
+            String text = new String(Base64.decodeBase64(parts[1]), "UTF-8");
+            int i = text.indexOf(":");
+            if (i == -1) {
+                return null;
+            }
+
+            return new String[]{text.substring(0, i), text.substring(i + 1)};
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
     @Override
