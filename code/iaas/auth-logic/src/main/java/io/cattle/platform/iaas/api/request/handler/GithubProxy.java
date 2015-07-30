@@ -39,6 +39,9 @@ public class GithubProxy extends AbstractResponseGenerator {
             return;
         }
         String accessToken = githubUtils.getAccessToken();
+        if (accessToken == null) {
+            return;
+        }
 
         if (StringUtils.isEmpty(accessToken)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);

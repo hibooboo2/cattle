@@ -7,6 +7,7 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchPro
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,13 +22,15 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.StartTlsRequest;
+import javax.naming.ldap.StartTlsResponse;
+import javax.net.ssl.SSLSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.sun.jndi.ldap.LdapCtxFactory;
 
 public class LdapIdentitySearchProvider extends LdapConfigurable implements IdentitySearchProvider {
 
@@ -94,30 +97,40 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_PRINCIPAL, username);
         props.put(Context.SECURITY_CREDENTIALS, password);
+        props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         LdapContext userContext;
 
         try {
-            String scheme = LdapConstants.TLS_ENABLED.get() ? "ldaps://" : "ldap://";
-            String url = scheme + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/';
-            userContext = (LdapContext) LdapCtxFactory.getLdapCtxInstance( url, props);
+            String url = "ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/';
+            props.put(Context.PROVIDER_URL, url);
+            userContext = new InitialLdapContext(props, null);
+            StartTlsResponse tlsResponse;
+            SSLSession sslSession;
+            if (LdapConstants.TLS_ENABLED.get()){
+                tlsResponse =(StartTlsResponse) userContext.extendedOperation(new StartTlsRequest());
+                sslSession = tlsResponse.negotiate();
+            }
             return userContext;
         } catch (NamingException e) {
-            logger.error("Failed to bind to LDAP / get account information: " + e);
+            logger.error("Failed to bind to LDAP", e);
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to start ssl", e);
         }
     }
 
-    private SearchResult userRecord(LdapContext context, String domain, String name) {
+    private Attributes userRecord(LdapContext context, String scope, String name) {
         SearchControls controls = new SearchControls();
         name = getSamName(name);
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
             String query = "(" + LdapConstants.SEARCH_FIELD.get() + '=' + name + ")";
-            results = context.search(toDC(domain), query, controls);
+            results = context.search(scope, query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
-            return null;
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig", "Organizational Unit not found.", null);
         }
         try {
             if (!results.hasMore()) {
@@ -135,26 +148,19 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 logger.error("More than one result.");
                 return null;
             }
-            int permission = Integer.parseInt(result.getAttributes().get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get().toString());
-            permission = permission & LdapConstants.HAS_ACCESS_BIT;
-            if (permission == LdapConstants.HAS_ACCESS_BIT)
-            {
+            if (!hasPermission(result.getAttributes())){
                 return null;
             }
         } catch (NamingException e) {
             logger.error("No results. when searching. " + name);
             return null;
         }
-        return result;
+        return result.getAttributes();
     }
 
-    private Set<Identity> getIdentities(SearchResult result) {
+    private Set<Identity> getIdentities(Attributes userAttributes) {
         Set<Identity> identities = new HashSet<>();
-        if (result == null) {
-            return identities;
-        }
-        Attributes userAttributes = result.getAttributes();
-        Attribute memberOf = result.getAttributes().get(LdapConstants.MEMBER_OF);
+        Attribute memberOf = userAttributes.get(LdapConstants.MEMBER_OF);
         try {
             if (!isType(userAttributes, LdapConstants.OBJECT_TYPE_USER))
             {
@@ -173,16 +179,6 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
     }
 
-    private String toDC(String domainName) {
-        StringBuilder buf = new StringBuilder();
-        for (String token : domainName.split("\\.")) {
-            if (token.length() == 0) continue;   // defensive check
-            if (buf.length() > 0) buf.append(",");
-            buf.append("DC=").append(token);
-        }
-        return buf.toString();
-    }
-
     public Set<Identity> getIdentities(String username, String password) {
         if (!isConfigured()) {
             return new HashSet<>();
@@ -193,7 +189,11 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         } catch (RuntimeException e) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
-        Set<Identity> identities = getIdentities(userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username));
+        Attributes userAttributes = userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username);
+        if (userAttributes == null){
+            return new HashSet<>();
+        }
+        Set<Identity> identities = getIdentities(userAttributes);
         try {
             userContext.close();
         } catch (NamingException e) {
@@ -230,26 +230,9 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
     }
 
     private List<Identity> searchUser(String name, boolean exactMatch) {
-        try {
-            LdapContext context = getServiceContext();
-            SearchResult result = userRecord(context, LdapConstants.LDAP_DOMAIN.get(), name);
-            if (result == null) {
-                return new ArrayList<>();
-            }
-            Attributes attributes = result.getAttributes();
-            if (!isType(attributes, LdapConstants.OBJECT_TYPE_USER)){
-                return new ArrayList<>();
-            }
-            String accountName = (String) attributes.get(LdapConstants.NAME_FIELD_USER).get();
-            String externalId = (String) attributes.get(LdapConstants.DN).get();
-            Identity identity = new Identity(LdapConstants.USER_SCOPE, externalId, accountName);
-            List<Identity> identities = new ArrayList<>();
-            identities.add(identity);
-            return identities;
-        } catch (NamingException e) {
-            logger.error("Failed to search for user: " + name, e);
-            return new ArrayList<>();
-        }
+        LdapContext context = getServiceContext();
+        String query = "(" + LdapConstants.SEARCH_FIELD.get() + '=' + name + ")";
+        return searchLdap(context, LdapConstants.LDAP_DOMAIN.get(), name, query);
     }
 
     private Identity getUser(String distinguishedName) {
@@ -259,13 +242,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 return null;
             }
             Attributes search = context.getAttributes(new LdapName(distinguishedName));
-            if (!isType(search, LdapConstants.OBJECT_TYPE_USER)){
-                return null;
-            }
-            int permission = Integer.parseInt(search.get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get().toString());
-            permission = permission & LdapConstants.HAS_ACCESS_BIT;
-            if (permission == LdapConstants.HAS_ACCESS_BIT)
-            {
+            if (!isType(search, LdapConstants.OBJECT_TYPE_USER) && !hasPermission(search)){
                 return null;
             }
             String accountName = (String) search.get(LdapConstants.NAME_FIELD_USER).get();
@@ -315,5 +292,76 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         } else {
             return null;
         }
+    }
+
+    private List<Identity> searchLdap(LdapContext context, String ldapScope, String name, String query) {
+        List<Identity> identities = new ArrayList<>();
+        SearchControls controls = new SearchControls();
+        name = getSamName(name);
+        controls.setSearchScope(SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> results;
+        try {
+            results = context.search(ldapScope, query, controls);
+        } catch (NamingException e) {
+            logger.error("Failed to search: " + name, e);
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig", "Organizational Unit not found.", null);
+        }
+        try {
+            if (!results.hasMore()) {
+                return identities;
+            }
+        } catch (NamingException e) {
+            return identities;
+        }
+        try {
+            while (results.hasMore()){
+                identities.add(resultToIdentity(results.next().getAttributes()));
+            }
+        } catch (NamingException e) {
+            logger.error("No results. when searching. " + name);
+            throw new RuntimeException(e);
+        }
+        return identities;
+    }
+
+    private Identity resultToIdentity(Attributes search){
+        try {
+            if (!hasPermission(search)){
+                return null;
+            }
+            String kind;
+            String accountName;
+            String externalId;
+            if (isType(search, LdapConstants.OBJECT_TYPE_USER)){
+                kind = LdapConstants.USER_SCOPE;
+                accountName = (String) search.get(LdapConstants.NAME_FIELD_USER).get();
+                externalId = (String) search.get(LdapConstants.DN).get();
+            } else if (isType(search, LdapConstants.OBJECT_TYPE_GROUP)) {
+                kind = LdapConstants.GROUP_SCOPE;
+                accountName = (String) search.get(LdapConstants.NAME_FIELD_GROUP).get();
+                externalId = (String) search.get(LdapConstants.DN).get();
+            } else {
+                return null;
+            }
+            return new Identity(kind, externalId, accountName);
+        } catch (NamingException e) {
+            return null;
+        }
+    }
+
+    private boolean hasPermission(Attributes attributes){
+        int permission;
+        try {
+            if (!isType(attributes, LdapConstants.OBJECT_TYPE_USER)){
+                return true;
+            }
+            permission = Integer.parseInt(attributes.get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get()
+                    .toString());
+        } catch (NamingException e) {
+            logger.error("Failed to get USER_ACCOUNT_CONTROL_FIELD.", e);
+            return false;
+        }
+        permission = permission & LdapConstants.HAS_ACCESS_BIT;
+        return permission != LdapConstants.HAS_ACCESS_BIT;
     }
 }
