@@ -28,7 +28,7 @@ public class Token {
     private final boolean enabled;
     private final List<Identity> identities;
 
-    //LEGACY: Used for old Implementation of projects/ Idnetities. Remove when vincent changes to new api.
+    //LEGACY: Used for old Implementation of projects/ Identities. Remove when vincent changes to new api.
     public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType,
                  String authProvider, String accountId, List<Identity> identities) {
         this.jwt = jwt;
@@ -47,7 +47,7 @@ public class Token {
 
     }
 
-    //LEGACY: Used for old Implementation of projects/ Idnetities. Remove when vincent changes to new api.
+    //LEGACY: Used for old Implementation of projects/ Identities. Remove when vincent changes to new api.
     public Token(Boolean security, String clientId, String hostName, String authProvider) {
         this.authProvider = authProvider;
         this.jwt = null;

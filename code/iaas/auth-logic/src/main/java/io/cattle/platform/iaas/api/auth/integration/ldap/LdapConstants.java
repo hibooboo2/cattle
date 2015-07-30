@@ -58,7 +58,11 @@ public class LdapConstants {
     public static final String MANAGER = NAME + "Manager";
 
 
-    //Should these be configurable settings?
+    /* * All of these
+       * Fields Should be configurable. Make them configurable in ldap config. and used in appropriate places.
+       * Add the member attributes and memberOf attributes. Make Comma separated list of ous that are allowed as setting.
+       * This setting will be iterated on every login request/ search for results. We only support direct membership currently.
+    * */
     public static final String NAME_FIELD_USER = "name";
     public static final String NAME_FIELD_GROUP = "name";
     public static final String MEMBER_OF = "memberOf";

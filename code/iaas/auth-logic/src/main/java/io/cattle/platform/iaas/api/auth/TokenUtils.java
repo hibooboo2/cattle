@@ -120,11 +120,11 @@ public abstract class TokenUtils  {
         return identities();
     }
 
-    public void findAndSetJWT() {
+    public boolean findAndSetJWT() {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         String jwt = (String) request.getAttribute(tokenType());
         if (StringUtils.isNotBlank(jwt) && getJsonData(jwt, tokenType()) != null) {
-            return;
+            return true;
         }
         if (StringUtils.isBlank(jwt)) {
             for (Cookie cookie : request.getServletContext().getRequest().getCookies()) {
@@ -143,7 +143,9 @@ public abstract class TokenUtils  {
         }
         if (getJsonData(jwt, tokenType()) != null) {
             request.setAttribute(tokenType(), jwt);
+            return true;
         }
+        return false;
     }
 
     public boolean isAllowed(List<String> idList, Set<Identity> identities) {
@@ -167,8 +169,15 @@ public abstract class TokenUtils  {
     protected abstract String accessMode();
 
     public String getAccessToken() {
-        findAndSetJWT();
-        return (String) DataAccessor.fields(getAccountFromJWT()).withKey(accessToken()).get();
+        if (findAndSetJWT()) {
+            Account account = getAccountFromJWT();
+            if (account == null) {
+                return null;
+            }
+            return (String) DataAccessor.fields(account).withKey(accessToken()).get();
+        } else {
+            return null;
+        }
     }
 
     protected abstract String accessToken();
