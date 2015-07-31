@@ -34,8 +34,9 @@ public class LdapConstants {
     public static final String DOMAIN_SETTING = "api.auth.ldap.domain";
     public static final String LOGIN_DOMAIN_SETTING = "api.auth.ldap.login.domain";
     public static final String PORT_SETTING = "api.auth.ldap.port";
-    public static final String SEARCH_FIELD_USER_SETTING = "api.auth.ldap.search.field.user";
+    public static final String USER_SEARCH_FIELD_SETTING = "api.auth.ldap.user.search.field";
     public static final String SERIVCE_ACCOUNT_USERNAME_SETTING = "api.auth.ldap.service.account.user";
+    public static final String GROUP_SEARCH_FIELD_SETTING = "api.auth.ldap.group.search.field";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
     public static final String SERVICE_ACCOUNT_PASSWORD_SETTING = "api.auth.ldap.service.account.password";
     public static final String TLS_SETTING = "api.auth.ldap.tls";
@@ -53,8 +54,10 @@ public class LdapConstants {
 
     public static final String TOKEN_CREATOR = NAME + "TokenCreator";
     public static final DynamicBooleanProperty TLS_ENABLED = ArchaiusUtil.getBoolean(TLS_SETTING);
-    public static final DynamicStringProperty SEARCH_FIELD = ArchaiusUtil.getString(SEARCH_FIELD_USER_SETTING);
-    public static final String SEARCH_FIELD_USER = "searchFieldUser";
+    public static final DynamicStringProperty USER_SEARCHFIELD = ArchaiusUtil.getString(USER_SEARCH_FIELD_SETTING);
+    public static final DynamicStringProperty GROUP_SEARCHFIELD = ArchaiusUtil.getString(GROUP_SEARCH_FIELD_SETTING);
+    public static final String USER_SEARCH_FIELD = "userSearchField";
+    public static final String GROUP_SEARCH_FIELD = "groupSearchField";
     public static final String MANAGER = NAME + "Manager";
 
 
@@ -63,13 +66,12 @@ public class LdapConstants {
        * Add the member attributes and memberOf attributes. Make Comma separated list of ous that are allowed as setting.
        * This setting will be iterated on every login request/ search for results. We only support direct membership currently.
     * */
-    public static final String NAME_FIELD_USER = "name";
-    public static final String NAME_FIELD_GROUP = "name";
+    public static final String USER_NAME_FIELD = "name";
+    public static final String GROUP_NAMEFIELD = "name";
     public static final String MEMBER_OF = "memberOf";
     public static final String OBJECT_CLASS = "objectClass";
-    public static final String OBJECT_TYPE_GROUP = "group";
-    public static final String OBJECT_TYPE_USER = "person";
-    public static final String SEARCH_FIELD_GROUP = "sAMAccountName";
+    public static final String GROUP_OBJECT_CLASS = "group";
+    public static final String USER_OBJECT_CLASS = "person";
     public static final String DN = "distinguishedname";
 
     public static final int HAS_ACCESS_BIT = 514;
