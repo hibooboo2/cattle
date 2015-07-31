@@ -37,6 +37,7 @@ public class LdapConstants {
     public static final String USER_SEARCH_FIELD_SETTING = "api.auth.ldap.user.search.field";
     public static final String SERIVCE_ACCOUNT_USERNAME_SETTING = "api.auth.ldap.service.account.user";
     public static final String GROUP_SEARCH_FIELD_SETTING = "api.auth.ldap.group.search.field";
+    public static final String USER_LOGIN_FIELD_SETTING = "api.auth.ldap.user.login.field";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
     public static final String SERVICE_ACCOUNT_PASSWORD_SETTING = "api.auth.ldap.service.account.password";
     public static final String TLS_SETTING = "api.auth.ldap.tls";
@@ -55,8 +56,10 @@ public class LdapConstants {
     public static final String TOKEN_CREATOR = NAME + "TokenCreator";
     public static final DynamicBooleanProperty TLS_ENABLED = ArchaiusUtil.getBoolean(TLS_SETTING);
     public static final DynamicStringProperty USER_SEARCHFIELD = ArchaiusUtil.getString(USER_SEARCH_FIELD_SETTING);
+    public static final DynamicStringProperty USER_LOGINFIELD = ArchaiusUtil.getString(USER_LOGIN_FIELD_SETTING);
     public static final DynamicStringProperty GROUP_SEARCHFIELD = ArchaiusUtil.getString(GROUP_SEARCH_FIELD_SETTING);
     public static final String USER_SEARCH_FIELD = "userSearchField";
+    public static final String USER_LOGIN_FIELD = "userLoginField";
     public static final String GROUP_SEARCH_FIELD = "groupSearchField";
     public static final String MANAGER = NAME + "Manager";
 

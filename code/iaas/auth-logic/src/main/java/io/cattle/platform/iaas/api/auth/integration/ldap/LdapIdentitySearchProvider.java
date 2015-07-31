@@ -51,10 +51,10 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
 
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
-        //TODO:Implement Exact match vs none exact match.
         if (!isConfigured()){
             return new ArrayList<>();
         }
+        name = escapeLDAPSearchFilter(name);
         switch (scope) {
             case LdapConstants.USER_SCOPE:
                 return searchUser(name, exactMatch);
@@ -94,8 +94,8 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
 
     private LdapContext login(String username, String password) {
         Hashtable<String, String> props = new Hashtable<>();
-        props.put(Context.SECURITY_PRINCIPAL, username);
-        props.put(Context.SECURITY_CREDENTIALS, password);
+//        props.put(Context.SECURITY_PRINCIPAL, username);
+//        props.put(Context.SECURITY_CREDENTIALS, password);
         props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         LdapContext userContext;
 
@@ -109,6 +109,9 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 tlsResponse =(StartTlsResponse) userContext.extendedOperation(new StartTlsRequest());
                 sslSession = tlsResponse.negotiate();
             }
+            userContext.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
+            userContext.addToEnvironment(Context.SECURITY_PRINCIPAL, username);
+            userContext.addToEnvironment(Context.SECURITY_CREDENTIALS, password);
             return userContext;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP", e);
@@ -125,7 +128,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
-            String query = "(" + LdapConstants.USER_SEARCHFIELD.get() + '=' + name + ")";
+            String query = "(" + LdapConstants.USER_LOGINFIELD.get() + '=' + name + ")";
             results = context.search(scope, query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
@@ -148,7 +151,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 logger.error("More than one result.");
                 return null;
             }
-            if (!hasPermission(result.getAttributes())){
+            if (!hasPermission(result.getAttributes())) {
                 return null;
             }
         } catch (NamingException e) {
@@ -359,5 +362,32 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
         permission = permission & LdapConstants.HAS_ACCESS_BIT;
         return permission != LdapConstants.HAS_ACCESS_BIT;
+    }
+
+    private String escapeLDAPSearchFilter(String filter) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filter.length(); i++) {
+            char curChar = filter.charAt(i);
+            switch (curChar) {
+                case '\\':
+                    sb.append("\\5c");
+                    break;
+                case '*':
+                    sb.append("\\2a");
+                    break;
+                case '(':
+                    sb.append("\\28");
+                    break;
+                case ')':
+                    sb.append("\\29");
+                    break;
+                case '\u0000':
+                    sb.append("\\00");
+                    break;
+                default:
+                    sb.append(curChar);
+            }
+        }
+        return sb.toString();
     }
 }

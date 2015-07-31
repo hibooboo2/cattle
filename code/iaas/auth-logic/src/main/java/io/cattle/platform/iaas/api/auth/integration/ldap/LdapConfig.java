@@ -17,11 +17,12 @@ public class LdapConfig implements AuthConfig{
     private final String serviceAccountPassword;
     private final boolean tls;
     private final String userSearchField;
+    private final String userLoginField;
     private final String groupSearchField;
 
     public LdapConfig(String server, int port, String loginDomain, String domain,
                       boolean enabled, String accessMode, String serviceAccountUsername,
-                      String serviceAccountPassword, boolean tls, String userSearchField, String groupSearchField) {
+                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField, String groupSearchField) {
         this.server = server;
         this.port = port;
         this.loginDomain = loginDomain;
@@ -32,6 +33,7 @@ public class LdapConfig implements AuthConfig{
         this.serviceAccountPassword = serviceAccountPassword;
         this.tls = tls;
         this.userSearchField = userSearchField;
+        this.userLoginField = userLoginField;
         this.groupSearchField = groupSearchField;
     }
 
@@ -60,7 +62,7 @@ public class LdapConfig implements AuthConfig{
         return domain;
     }
 
-    @Field(required = true, nullable = true, defaultValue = "unrestricted")
+    @Field(required = true, nullable = false, defaultValue = "unrestricted")
     public String getAccessMode() {
         return accessMode;
     }
@@ -90,13 +92,18 @@ public class LdapConfig implements AuthConfig{
         return tls;
     }
 
-    @Field(nullable = true, required = false, defaultValue = "sAMAccountName")
+    @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getUserSearchField() {
         return userSearchField;
     }
 
-    @Field(nullable = true, required = false, defaultValue = "sAMAccountName")
+    @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getGroupSearchField() {
         return groupSearchField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
+    public String getUserLoginField() {
+        return userLoginField;
     }
 }
