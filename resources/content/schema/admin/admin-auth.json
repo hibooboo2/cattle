@@ -103,6 +103,7 @@
         "instanceStop.deallocateFromHost" : "cr",
 
         "ldapconfig" : "cru",
+        "ldapconfig.*" : "cr",
         "ldapconfig.server" : "cr",
         "ldapconfig.port" : "cr",
         "ldapconfig.enabled" : "cr",
