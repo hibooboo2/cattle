@@ -7,7 +7,6 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchPro
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,9 +24,6 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
-import javax.naming.ldap.StartTlsRequest;
-import javax.naming.ldap.StartTlsResponse;
-import javax.net.ssl.SSLSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,31 +90,23 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
 
     private LdapContext login(String username, String password) {
         Hashtable<String, String> props = new Hashtable<>();
-//        props.put(Context.SECURITY_PRINCIPAL, username);
-//        props.put(Context.SECURITY_CREDENTIALS, password);
+        props.put(Context.SECURITY_AUTHENTICATION, "simple");
+        props.put(Context.SECURITY_PRINCIPAL, username);
+        props.put(Context.SECURITY_CREDENTIALS, password);
         props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         LdapContext userContext;
 
         try {
             String url = "ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/';
             props.put(Context.PROVIDER_URL, url);
-            userContext = new InitialLdapContext(props, null);
-            StartTlsResponse tlsResponse;
-            SSLSession sslSession;
-            if (LdapConstants.TLS_ENABLED.get()){
-                tlsResponse =(StartTlsResponse) userContext.extendedOperation(new StartTlsRequest());
-                sslSession = tlsResponse.negotiate();
+            if (LdapConstants.TLS_ENABLED.get()) {
+                props.put(Context.SECURITY_PROTOCOL, "ssl");
             }
-            userContext.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            userContext.addToEnvironment(Context.SECURITY_PRINCIPAL, username);
-            userContext.addToEnvironment(Context.SECURITY_CREDENTIALS, password);
+            userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
             logger.error("Failed to bind to LDAP", e);
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to start ssl", e);
         }
     }
 
