@@ -9,12 +9,21 @@ public abstract class LdapConfigurable implements Configurable {
 
     @Override
     public boolean isConfigured() {
-return         StringUtils.equalsIgnoreCase(SecurityConstants.AUTHPROVIDER.get(), LdapConstants.CONFIG) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
-                StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+        if (SecurityConstants.SECURITY.get()){
+            return         StringUtils.equalsIgnoreCase(SecurityConstants.AUTHPROVIDER.get(), LdapConstants.CONFIG) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+        } else {
+            return StringUtils.isNotBlank(LdapConstants.LDAP_SERVER.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_PORT.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_USER.get()) &&
+                    StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get());
+        }
     }
 }
