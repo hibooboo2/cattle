@@ -116,7 +116,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
-            String query = "(" + LdapConstants.USER_LOGINFIELD.get() + '=' + name + ")";
+            String query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
             results = context.search(scope, query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + name, e);
@@ -153,7 +153,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         Set<Identity> identities = new HashSet<>();
         Attribute memberOf = userAttributes.get(LdapConstants.MEMBER_OF);
         try {
-            if (!isType(userAttributes, LdapConstants.USER_OBJECT_CLASS))
+            if (!isType(userAttributes, LdapConstants.USER_OBJECT_CLASS.get()))
             {
                 return identities;
             }
@@ -219,11 +219,11 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         LdapContext context = getServiceContext();
         String query;
         if (exactMatch) {
-            query = "(&(" + LdapConstants.GROUP_SEARCHFIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.GROUP_OBJECT_CLASS + "))";
+            query = "(&(" + LdapConstants.GROUP_SEARCH_FIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
+                    + LdapConstants.GROUP_OBJECT_CLASS.get() + "))";
         } else {
-            query = "(&(" + LdapConstants.GROUP_SEARCHFIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.GROUP_OBJECT_CLASS + "))";
+            query = "(&(" + LdapConstants.GROUP_SEARCH_FIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
+                    + LdapConstants.GROUP_OBJECT_CLASS.get() + "))";
         }
         return searchLdap(context, LdapConstants.LDAP_DOMAIN.get(), name, query);
     }
@@ -233,11 +233,11 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         String query;
         if (exactMatch)
         {
-            query = "(&(" + LdapConstants.USER_SEARCHFIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.USER_OBJECT_CLASS + "))";
+            query = "(&(" + LdapConstants.USER_SEARCH_FIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
+                    + LdapConstants.USER_OBJECT_CLASS.get() + "))";
         } else {
-            query = "(&(" + LdapConstants.USER_SEARCHFIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.USER_OBJECT_CLASS + "))";
+            query = "(&(" + LdapConstants.USER_SEARCH_FIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
+                    + LdapConstants.USER_OBJECT_CLASS.get() + "))";
         }
         return searchLdap(context, LdapConstants.LDAP_DOMAIN.get(), name, query);
     }
@@ -319,13 +319,13 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             String kind;
             String accountName;
             String externalId;
-            if (isType(search, LdapConstants.USER_OBJECT_CLASS)){
+            if (isType(search, LdapConstants.USER_OBJECT_CLASS.get())){
                 kind = LdapConstants.USER_SCOPE;
-                accountName = (String) search.get(LdapConstants.USER_NAME_FIELD).get();
+                accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
                 externalId = (String) search.get(LdapConstants.DN).get();
-            } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS)) {
+            } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS.get())) {
                 kind = LdapConstants.GROUP_SCOPE;
-                accountName = (String) search.get(LdapConstants.GROUP_NAMEFIELD).get();
+                accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
                 externalId = (String) search.get(LdapConstants.DN).get();
             } else {
                 return null;
@@ -339,13 +339,13 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
     private boolean hasPermission(Attributes attributes){
         int permission;
         try {
-            if (!isType(attributes, LdapConstants.USER_OBJECT_CLASS)){
+            if (!isType(attributes, LdapConstants.USER_OBJECT_CLASS.get())){
                 return true;
             }
-            permission = Integer.parseInt(attributes.get(LdapConstants.USER_ACCOUNT_CONTROL_FIELD).get()
+            permission = Integer.parseInt(attributes.get(LdapConstants.USER_ENABLED_ATTRIBUTE.get()).get()
                     .toString());
         } catch (NamingException e) {
-            logger.error("Failed to get USER_ACCOUNT_CONTROL_FIELD.", e);
+            logger.error("Failed to get USER_ENABLED_ATTRIBUTE.", e);
             return false;
         }
         permission = permission & LdapConstants.HAS_ACCESS_BIT;
