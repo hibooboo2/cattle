@@ -10,7 +10,7 @@ public class LdapConfig implements AuthConfig{
     private final boolean enabled;
     private final String server;
     private final int port;
-    private final int userEnabledMaskBit;
+    private final int userDisabledBitMask;
     private final String loginDomain;
     private final String domain;
     private final String accessMode;
@@ -26,12 +26,12 @@ public class LdapConfig implements AuthConfig{
     private final String groupObjectClass;
     private final String groupNameField;
 
-    public LdapConfig(String server, int port, int userEnabledMaskBit, String loginDomain, String domain,
+    public LdapConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
                       boolean enabled, String accessMode, String serviceAccountUsername,
                       String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField, String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField, String groupObjectClass, String groupNameField) {
         this.server = server;
         this.port = port;
-        this.userEnabledMaskBit = userEnabledMaskBit;
+        this.userDisabledBitMask = userDisabledBitMask;
         this.loginDomain = loginDomain;
         this.domain = domain;
         this.enabled = enabled;
@@ -134,9 +134,9 @@ public class LdapConfig implements AuthConfig{
         return userNameField;
     }
 
-    @Field(nullable = false, required = true, defaultValue = "514")
-    public int getUserEnabledMaskBit() {
-        return userEnabledMaskBit;
+    @Field(nullable = false, required = true, defaultValue = "2")
+    public int getUserDisabledBitMask() {
+        return userDisabledBitMask;
     }
 
     @Field(nullable = false, required = true, defaultValue = "group")

@@ -348,8 +348,8 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             logger.error("Failed to get USER_ENABLED_ATTRIBUTE.", e);
             return false;
         }
-        permission = permission & LdapConstants.HAS_ACCESS_BIT;
-        return permission != LdapConstants.HAS_ACCESS_BIT;
+        permission = permission & LdapConstants.USER_DISABLED_BIT_MASK.get();
+        return permission != LdapConstants.USER_DISABLED_BIT_MASK.get();
     }
 
     private String escapeLDAPSearchFilter(String filter) {

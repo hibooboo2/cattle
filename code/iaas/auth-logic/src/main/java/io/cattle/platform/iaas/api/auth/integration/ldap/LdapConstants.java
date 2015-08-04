@@ -42,7 +42,7 @@ public class LdapConstants {
     public static final String USER_NAME_FIELD_SETTING = "api.auth.ldap.user.name.field";
     public static final String GROUP_OBJECT_CLASS_SETTING = "api.auth.ldap.group.object.class";
     public static final String USER_LOGIN_FIELD_SETTING = "api.auth.ldap.user.login.field";
-    public static final String USER_ENABLED_MASK_BIT_SETTING_NAME = "api.auth.ldap.user.enabled.mask.bit";
+    public static final String USER_DISABLED_BIT_MASK_SETTING = "api.auth.ldap.user.enabled.mask.bit";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
     public static final String SERVICE_ACCOUNT_PASSWORD_SETTING = "api.auth.ldap.service.account.password";
     public static final String USER_ENABLED_ATTRIBUTE_SETTING = "api.auth.ldan.user.enabled.attribute";
@@ -66,11 +66,12 @@ public class LdapConstants {
     public static final DynamicStringProperty USER_LOGIN_FIELD = ArchaiusUtil.getString(USER_LOGIN_FIELD_SETTING);
     public static final DynamicStringProperty GROUP_SEARCH_FIELD = ArchaiusUtil.getString(GROUP_SEARCH_FIELD_SETTING);
     public static final DynamicStringProperty USER_OBJECT_CLASS = ArchaiusUtil.getString(USER_OBJECT_CLASS_SETTING);
-    public static final DynamicIntProperty USER_ENABLED_MASK_BIT_SETTING = ArchaiusUtil.getInt(USER_ENABLED_MASK_BIT_SETTING_NAME);
+    public static final DynamicIntProperty USER_DISABLED_BIT_MASK = ArchaiusUtil.getInt(USER_DISABLED_BIT_MASK_SETTING);
+    public static final DynamicStringProperty USER_ENABLED_ATTRIBUTE = ArchaiusUtil.getString(USER_ENABLED_ATTRIBUTE_SETTING);
     public static final String USER_SEARCH_FIELD_FIELD = "userSearchField";
     public static final String USER_LOGIN_FIELD_FIELD = "userLoginField";
     public static final String USER_OBJECT_CLASS_FIELD = "userObjectClass";
-    public static final String USER_ENABLED_MASK_BIT = "userEnabledMaskBit";
+    public static final String USER_DISABLED_MASK_BIT = "userDisabledBitMask";
     public static final String USER_NAME_FIELD_FIELD = "userNameField";
     public static final String USER_ENABLED_ATTRIBUTE_FIELD = "userEnabledAttribute";
     public static final String GROUP_SEARCH_FIELD_FIELD = "groupSearchField";
@@ -91,6 +92,4 @@ public class LdapConstants {
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
     public static final String DN = "distinguishedname";
 
-    public static final int HAS_ACCESS_BIT = 514;
-    public static final DynamicStringProperty USER_ENABLED_ATTRIBUTE = ArchaiusUtil.getString(USER_ENABLED_ATTRIBUTE_SETTING);
 }

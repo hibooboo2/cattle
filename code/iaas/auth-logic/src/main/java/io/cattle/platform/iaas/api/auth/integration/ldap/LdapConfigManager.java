@@ -94,9 +94,9 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         if (config.get(LdapConstants.USER_LOGIN_FIELD_FIELD) != null){
             groupSearchField = (String) config.get(LdapConstants.USER_LOGIN_FIELD_FIELD);
         }
-        int userEnabledMaskBit = currentConfig.getUserEnabledMaskBit();
-        if (config.get(LdapConstants.USER_ENABLED_MASK_BIT) !=null){
-            userEnabledMaskBit = (int) (long) config.get(LdapConstants.USER_ENABLED_MASK_BIT);
+        int userEnabledMaskBit = currentConfig.getUserDisabledBitMask();
+        if (config.get(LdapConstants.USER_DISABLED_MASK_BIT) !=null){
+            userEnabledMaskBit = (int) (long) config.get(LdapConstants.USER_DISABLED_MASK_BIT);
         }
 
         String userObjectClass = currentConfig.getUserObjectClass();
@@ -139,7 +139,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         String groupSearchField = LdapConstants.GROUP_SEARCH_FIELD.get();
         String userLoginField = LdapConstants.USER_LOGIN_FIELD.get();
         int port = LdapConstants.LDAP_PORT.get();
-        int userEnabledMaskBit = LdapConstants.USER_ENABLED_MASK_BIT_SETTING.get();
+        int userEnabledMaskBit = LdapConstants.USER_DISABLED_BIT_MASK.get();
         String userObjectClass = LdapConstants.USER_OBJECT_CLASS.get();
         String userNameField = LdapConstants.USER_NAME_FIELD.get();
         String groupObjectClass = LdapConstants.GROUP_OBJECT_CLASS.get();
@@ -163,7 +163,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.GROUP_SEARCH_FIELD_SETTING, config.get(LdapConstants.GROUP_SEARCH_FIELD_FIELD));
         settingsUtils.changeSetting(LdapConstants.USER_LOGIN_FIELD_SETTING, config.get(LdapConstants.USER_LOGIN_FIELD_FIELD));
         settingsUtils.changeSetting(LdapConstants.PORT_SETTING, config.get(LdapConstants.PORT));
-        settingsUtils.changeSetting(LdapConstants.USER_ENABLED_MASK_BIT_SETTING_NAME, config.get(LdapConstants.USER_ENABLED_MASK_BIT));
+        settingsUtils.changeSetting(LdapConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(LdapConstants.USER_DISABLED_MASK_BIT));
         settingsUtils.changeSetting(LdapConstants.USER_OBJECT_CLASS_SETTING, config.get(LdapConstants.USER_OBJECT_CLASS_FIELD));
         settingsUtils.changeSetting(LdapConstants.USER_NAME_FIELD_SETTING, config.get(LdapConstants.USER_NAME_FIELD_FIELD));
         settingsUtils.changeSetting(LdapConstants.GROUP_OBJECT_CLASS_SETTING, config.get(LdapConstants.GROUP_OBJECT_CLASS_FIELD));

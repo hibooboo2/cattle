@@ -18,7 +18,7 @@ public abstract class LdapConfigurable implements Configurable {
                 StringUtils.isNotBlank(LdapConstants.SERVICEACCOUNT_PASSWORD.get()) &&
                 StringUtils.isNotBlank(LdapConstants.USER_SEARCH_FIELD.get()) &&
                 StringUtils.isNotBlank(LdapConstants.USER_OBJECT_CLASS.get()) &&
-                StringUtils.isNotBlank(String.valueOf(LdapConstants.USER_ENABLED_MASK_BIT_SETTING.get())) &&
+                StringUtils.isNotBlank(String.valueOf(LdapConstants.USER_DISABLED_BIT_MASK.get())) &&
                 StringUtils.isNotBlank(LdapConstants.USER_ENABLED_ATTRIBUTE.get()) &&
                 StringUtils.isNotBlank(LdapConstants.USER_NAME_FIELD.get()) &&
                 StringUtils.isNotBlank(LdapConstants.GROUP_SEARCH_FIELD.get()) &&
