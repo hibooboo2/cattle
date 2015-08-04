@@ -10,6 +10,7 @@ public class LdapConfig implements AuthConfig{
     private final boolean enabled;
     private final String server;
     private final int port;
+    private final int userEnabledMaskBit;
     private final String loginDomain;
     private final String domain;
     private final String accessMode;
@@ -18,13 +19,19 @@ public class LdapConfig implements AuthConfig{
     private final boolean tls;
     private final String userSearchField;
     private final String userLoginField;
+    private final String userObjectClass;
+    private final String userNameField;
+    private final String userEnabledAttribute;
     private final String groupSearchField;
+    private final String groupObjectClass;
+    private final String groupNameField;
 
-    public LdapConfig(String server, int port, String loginDomain, String domain,
+    public LdapConfig(String server, int port, int userEnabledMaskBit, String loginDomain, String domain,
                       boolean enabled, String accessMode, String serviceAccountUsername,
-                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField, String groupSearchField) {
+                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField, String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField, String groupObjectClass, String groupNameField) {
         this.server = server;
         this.port = port;
+        this.userEnabledMaskBit = userEnabledMaskBit;
         this.loginDomain = loginDomain;
         this.domain = domain;
         this.enabled = enabled;
@@ -34,7 +41,12 @@ public class LdapConfig implements AuthConfig{
         this.tls = tls;
         this.userSearchField = userSearchField;
         this.userLoginField = userLoginField;
+        this.userObjectClass = userObjectClass;
+        this.userNameField = userNameField;
+        this.userEnabledAttribute = userEnabledAttribute;
         this.groupSearchField = groupSearchField;
+        this.groupObjectClass = groupObjectClass;
+        this.groupNameField = groupNameField;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -47,7 +59,7 @@ public class LdapConfig implements AuthConfig{
         return enabled;
     }
 
-    @Field(nullable = false, required = true, defaultValue = "389", minLength = 1)
+    @Field(nullable = false, required = true, defaultValue = "389")
     public int getPort() {
         return port;
     }
@@ -105,5 +117,35 @@ public class LdapConfig implements AuthConfig{
     @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getUserLoginField() {
         return userLoginField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "person")
+    public String getUserObjectClass() {
+        return userObjectClass;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "userAccountControl")
+    public String getUserEnabledAttribute() {
+        return userEnabledAttribute;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "name")
+    public String getUserNameField() {
+        return userNameField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "514")
+    public int getUserEnabledMaskBit() {
+        return userEnabledMaskBit;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "group")
+    public String getGroupObjectClass() {
+        return groupObjectClass;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "name")
+    public String getGroupNameField() {
+        return groupNameField;
     }
 }

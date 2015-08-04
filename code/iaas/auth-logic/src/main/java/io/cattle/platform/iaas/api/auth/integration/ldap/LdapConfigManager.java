@@ -83,18 +83,45 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
             enabled = (Boolean) config.get(SecurityConstants.ENABLED);
         }
         String userSearchField = currentConfig.getUserSearchField();
-        if (config.get(LdapConstants.USER_SEARCH_FIELD) != null){
-            userSearchField = (String) config.get(LdapConstants.USER_SEARCH_FIELD);
+        if (config.get(LdapConstants.USER_SEARCH_FIELD_FIELD) != null){
+            userSearchField = (String) config.get(LdapConstants.USER_SEARCH_FIELD_FIELD);
         }
         String groupSearchField = currentConfig.getGroupSearchField();
-        if (config.get(LdapConstants.GROUP_SEARCH_FIELD) != null){
-            groupSearchField = (String) config.get(LdapConstants.GROUP_SEARCH_FIELD);
+        if (config.get(LdapConstants.GROUP_SEARCH_FIELD_FIELD) != null){
+            groupSearchField = (String) config.get(LdapConstants.GROUP_SEARCH_FIELD_FIELD);
         }
         String userLoginField = currentConfig.getUserLoginField();
-        if (config.get(LdapConstants.USER_LOGIN_FIELD) != null){
-            groupSearchField = (String) config.get(LdapConstants.USER_LOGIN_FIELD);
+        if (config.get(LdapConstants.USER_LOGIN_FIELD_FIELD) != null){
+            groupSearchField = (String) config.get(LdapConstants.USER_LOGIN_FIELD_FIELD);
         }
-        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, groupSearchField);
+        int userEnabledMaskBit = currentConfig.getUserEnabledMaskBit();
+        if (config.get(LdapConstants.USER_ENABLED_MASK_BIT) !=null){
+            userEnabledMaskBit = (int) (long) config.get(LdapConstants.USER_ENABLED_MASK_BIT);
+        }
+
+        String userObjectClass = currentConfig.getUserObjectClass();
+        if (config.get(LdapConstants.USER_OBJECT_CLASS_FIELD) != null) {
+            userObjectClass = (String) config.get(LdapConstants.USER_OBJECT_CLASS_FIELD);
+        }
+        String userNameField = currentConfig.getUserNameField();
+        if (config.get(LdapConstants.USER_NAME_FIELD_FIELD) != null){
+            userNameField = (String) config.get(LdapConstants.USER_NAME_FIELD_FIELD);
+        }
+        String userEnabledAttribute = currentConfig.getUserEnabledAttribute();
+        if (config.get(LdapConstants.USER_ENABLED_ATTRIBUTE_FIELD) != null){
+            userEnabledAttribute = (String) config.get(LdapConstants.USER_ENABLED_ATTRIBUTE_FIELD);
+        }
+        String groupObjectClass  = currentConfig.getGroupObjectClass();
+        if (config.get(LdapConstants.GROUP_OBJECT_CLASS_FIELD) != null){
+            groupObjectClass = (String) config.get(LdapConstants.GROUP_OBJECT_CLASS_FIELD);
+        }
+        String groupNameField = currentConfig.getGroupNameField();
+        if (config.get(LdapConstants.GROUP_NAME_FIELD_FIELD) != null){
+            groupNameField = (String) config.get(LdapConstants.GROUP_NAME_FIELD_FIELD);
+        }
+        return new LdapConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
+                serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField,
+                userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
     }
 
     @Override
@@ -108,16 +135,17 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         String accessMode = LdapConstants.ACCESS_MODE.get();
         String serviceAccountPassword = LdapConstants.SERVICEACCOUNT_PASSWORD.get();
         String serviceAccountUsername = LdapConstants.SERVICEACCOUNT_USER.get();
-        String userSearchField = LdapConstants.USER_SEARCHFIELD.get();
-        String groupSearchField = LdapConstants.GROUP_SEARCHFIELD.get();
-        String userLoginField = LdapConstants.USER_LOGINFIELD.get();
-        int port;
-        if (LdapConstants.LDAP_PORT.get() == null) {
-            port = 389;
-        } else {
-            port = Integer.valueOf(LdapConstants.LDAP_PORT.get());
-        }
-        return new LdapConfig(server, port, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, groupSearchField);
+        String userSearchField = LdapConstants.USER_SEARCH_FIELD.get();
+        String groupSearchField = LdapConstants.GROUP_SEARCH_FIELD.get();
+        String userLoginField = LdapConstants.USER_LOGIN_FIELD.get();
+        int port = LdapConstants.LDAP_PORT.get();
+        int userEnabledMaskBit = LdapConstants.USER_ENABLED_MASK_BIT_SETTING.get();
+        String userObjectClass = LdapConstants.USER_OBJECT_CLASS.get();
+        String userNameField = LdapConstants.USER_NAME_FIELD.get();
+        String groupObjectClass = LdapConstants.GROUP_OBJECT_CLASS.get();
+        String userEnabledAttribute = LdapConstants.USER_ENABLED_ATTRIBUTE.get();
+        String groupNameField = LdapConstants.GROUP_NAME_FIELD.get();
+        return new LdapConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
     }
 
     @Override
@@ -131,10 +159,16 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.ACCESS_MODE_SETTING, config.get(LdapConstants.ACCESSMODE));
         settingsUtils.changeSetting(LdapConstants.SERVER_SETTING, config.get(LdapConstants.SERVER));
         settingsUtils.changeSetting(LdapConstants.LOGIN_DOMAIN_SETTING, config.get(LdapConstants.LOGIN_DOMAIN));
-        settingsUtils.changeSetting(LdapConstants.USER_SEARCH_FIELD_SETTING, config.get(LdapConstants.USER_SEARCH_FIELD));
-        settingsUtils.changeSetting(LdapConstants.GROUP_SEARCH_FIELD_SETTING, config.get(LdapConstants.GROUP_SEARCH_FIELD));
-        settingsUtils.changeSetting(LdapConstants.USER_LOGIN_FIELD_SETTING, config.get(LdapConstants.USER_LOGIN_FIELD));
+        settingsUtils.changeSetting(LdapConstants.USER_SEARCH_FIELD_SETTING, config.get(LdapConstants.USER_SEARCH_FIELD_FIELD));
+        settingsUtils.changeSetting(LdapConstants.GROUP_SEARCH_FIELD_SETTING, config.get(LdapConstants.GROUP_SEARCH_FIELD_FIELD));
+        settingsUtils.changeSetting(LdapConstants.USER_LOGIN_FIELD_SETTING, config.get(LdapConstants.USER_LOGIN_FIELD_FIELD));
         settingsUtils.changeSetting(LdapConstants.PORT_SETTING, config.get(LdapConstants.PORT));
+        settingsUtils.changeSetting(LdapConstants.USER_ENABLED_MASK_BIT_SETTING_NAME, config.get(LdapConstants.USER_ENABLED_MASK_BIT));
+        settingsUtils.changeSetting(LdapConstants.USER_OBJECT_CLASS_SETTING, config.get(LdapConstants.USER_OBJECT_CLASS_FIELD));
+        settingsUtils.changeSetting(LdapConstants.USER_NAME_FIELD_SETTING, config.get(LdapConstants.USER_NAME_FIELD_FIELD));
+        settingsUtils.changeSetting(LdapConstants.GROUP_OBJECT_CLASS_SETTING, config.get(LdapConstants.GROUP_OBJECT_CLASS_FIELD));
+        settingsUtils.changeSetting(LdapConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(LdapConstants.USER_ENABLED_ATTRIBUTE_FIELD));
+        settingsUtils.changeSetting(LdapConstants.GROUP_NAME_FIELD_SETTING, config.get(LdapConstants.GROUP_NAME_FIELD_FIELD));
         settingsUtils.changeSetting(LdapConstants.SERIVCE_ACCOUNT_USERNAME_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME));
         settingsUtils.changeSetting(LdapConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD));
         settingsUtils.changeSetting(LdapConstants.TLS_SETTING, config.get(LdapConstants.TLS));
