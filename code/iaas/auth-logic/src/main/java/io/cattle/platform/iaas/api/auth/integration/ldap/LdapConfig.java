@@ -28,7 +28,9 @@ public class LdapConfig implements AuthConfig{
 
     public LdapConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
                       boolean enabled, String accessMode, String serviceAccountUsername,
-                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField, String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField, String groupObjectClass, String groupNameField) {
+                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField,
+                      String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
+                      String groupObjectClass, String groupNameField) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;

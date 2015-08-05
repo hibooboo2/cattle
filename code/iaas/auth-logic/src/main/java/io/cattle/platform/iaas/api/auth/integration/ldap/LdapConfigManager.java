@@ -142,7 +142,9 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         String groupObjectClass = LdapConstants.GROUP_OBJECT_CLASS.get();
         String userEnabledAttribute = LdapConstants.USER_ENABLED_ATTRIBUTE.get();
         String groupNameField = LdapConstants.GROUP_NAME_FIELD.get();
-        return new LdapConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode, serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
+        return new LdapConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
+                serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
+                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
     }
 
     @Override
