@@ -13,7 +13,6 @@ public class LdapConstants {
     public static final String GROUP_SCOPE = NAME + "_group";
 
     public static final String ACCESSMODE = "accessMode";
-    public static final String ACCOUNT_ID = NAME + "_AccountId";
     public static final String CONFIG = NAME + "config";
     public static final String DOMAIN = "domain";
     public static final String LDAP_ACCESS_TOKEN = NAME + "AccessToken";
@@ -23,8 +22,8 @@ public class LdapConstants {
     public static final String LOGIN_DOMAIN = "loginDomain";
     public static final String PORT = "port";
     public static final String SERVER = "server";
-    public static final String SERVICE_ACCOUNT_PASSWORD = "serviceAccountPassword";
-    public static final String SERVICE_ACCOUNT_USERNAME = "serviceAccountUsername";
+    public static final String SERVICE_ACCOUNT_PASSWORD_FIELD = "serviceAccountPassword";
+    public static final String SERVICE_ACCOUNT_USERNAME_FIELD = "serviceAccountUsername";
     public static final String TLS = "tls";
     public static final String TOKEN = "token";
     public static final String USERNAME = NAME + "UserName";
@@ -36,7 +35,7 @@ public class LdapConstants {
     public static final String LOGIN_DOMAIN_SETTING = "api.auth.ldap.login.domain";
     public static final String PORT_SETTING = "api.auth.ldap.port";
     public static final String USER_SEARCH_FIELD_SETTING = "api.auth.ldap.user.search.field";
-    public static final String SERIVCE_ACCOUNT_USERNAME_SETTING = "api.auth.ldap.service.account.user";
+    public static final String SERVICE_ACCOUNT_USERNAME_SETTING = "api.auth.ldap.service.account.user";
     public static final String GROUP_SEARCH_FIELD_SETTING = "api.auth.ldap.group.search.field";
     public static final String USER_OBJECT_CLASS_SETTING = "api.auth.ldap.user.object.class";
     public static final String USER_NAME_FIELD_SETTING = "api.auth.ldap.user.name.field";
@@ -45,7 +44,7 @@ public class LdapConstants {
     public static final String USER_DISABLED_BIT_MASK_SETTING = "api.auth.ldap.user.enabled.mask.bit";
     public static final String SERVER_SETTING = "api.auth.ldap.server";
     public static final String SERVICE_ACCOUNT_PASSWORD_SETTING = "api.auth.ldap.service.account.password";
-    public static final String USER_ENABLED_ATTRIBUTE_SETTING = "api.auth.ldan.user.enabled.attribute";
+    public static final String USER_ENABLED_ATTRIBUTE_SETTING = "api.auth.ldap.user.enabled.attribute";
     public static final String GROUP_NAME_FIELD_SETTING = "api.auth.ldap.group.name.field";
     public static final String TLS_SETTING = "api.auth.ldap.tls";
 
@@ -57,8 +56,8 @@ public class LdapConstants {
     public static final DynamicStringProperty LDAP_LOGIN_DOMAIN = ArchaiusUtil.getString(LOGIN_DOMAIN_SETTING);
     public static final DynamicIntProperty LDAP_PORT = ArchaiusUtil.getInt(PORT_SETTING);
     public static final DynamicStringProperty LDAP_SERVER = ArchaiusUtil.getString(SERVER_SETTING);
-    public static final DynamicStringProperty SERVICEACCOUNT_PASSWORD = ArchaiusUtil.getString(SERVICE_ACCOUNT_PASSWORD_SETTING);
-    public static final DynamicStringProperty SERVICEACCOUNT_USER = ArchaiusUtil.getString(SERIVCE_ACCOUNT_USERNAME_SETTING);
+    public static final DynamicStringProperty SERVICE_ACCOUNT_PASSWORD = ArchaiusUtil.getString(SERVICE_ACCOUNT_PASSWORD_SETTING);
+    public static final DynamicStringProperty SERVICE_ACCOUNT_USER = ArchaiusUtil.getString(SERVICE_ACCOUNT_USERNAME_SETTING);
 
     public static final String TOKEN_CREATOR = NAME + "TokenCreator";
     public static final DynamicBooleanProperty TLS_ENABLED = ArchaiusUtil.getBoolean(TLS_SETTING);

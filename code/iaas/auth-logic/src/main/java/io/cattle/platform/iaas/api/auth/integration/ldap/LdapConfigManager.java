@@ -24,9 +24,6 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
     @Inject
     JsonMapper jsonMapper;
 
-    @Inject
-    private LdapIdentitySearchProvider ldapClient;
-
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[]{LdapConfig.class};
@@ -63,12 +60,12 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
             loginDomain = (String) config.get(LdapConstants.ACCESSMODE);
         }
         String serviceAccountUsername = currentConfig.getServiceAccountUsername();
-        if (config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME);
+        if (config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD);
         }
         String serviceAccountPassword = currentConfig.getServiceAccountPassword();
-        if (config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD);
+        if (config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD) != null) {
+            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD);
         }
         boolean tls = currentConfig.getTls();
         if (config.get(LdapConstants.TLS) != null) {
@@ -133,8 +130,8 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         String loginDomain = LdapConstants.LDAP_LOGIN_DOMAIN.get();
         String domain = LdapConstants.LDAP_DOMAIN.get();
         String accessMode = LdapConstants.ACCESS_MODE.get();
-        String serviceAccountPassword = LdapConstants.SERVICEACCOUNT_PASSWORD.get();
-        String serviceAccountUsername = LdapConstants.SERVICEACCOUNT_USER.get();
+        String serviceAccountPassword = LdapConstants.SERVICE_ACCOUNT_PASSWORD.get();
+        String serviceAccountUsername = LdapConstants.SERVICE_ACCOUNT_USER.get();
         String userSearchField = LdapConstants.USER_SEARCH_FIELD.get();
         String groupSearchField = LdapConstants.GROUP_SEARCH_FIELD.get();
         String userLoginField = LdapConstants.USER_LOGIN_FIELD.get();
@@ -169,8 +166,8 @@ public class LdapConfigManager extends AbstractNoOpResourceManager implements Au
         settingsUtils.changeSetting(LdapConstants.GROUP_OBJECT_CLASS_SETTING, config.get(LdapConstants.GROUP_OBJECT_CLASS_FIELD));
         settingsUtils.changeSetting(LdapConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(LdapConstants.USER_ENABLED_ATTRIBUTE_FIELD));
         settingsUtils.changeSetting(LdapConstants.GROUP_NAME_FIELD_SETTING, config.get(LdapConstants.GROUP_NAME_FIELD_FIELD));
-        settingsUtils.changeSetting(LdapConstants.SERIVCE_ACCOUNT_USERNAME_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME));
-        settingsUtils.changeSetting(LdapConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD));
+        settingsUtils.changeSetting(LdapConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD));
+        settingsUtils.changeSetting(LdapConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD));
         settingsUtils.changeSetting(LdapConstants.TLS_SETTING, config.get(LdapConstants.TLS));
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
         if (config.get(SecurityConstants.ENABLED) != null && (boolean) config.get(SecurityConstants.ENABLED)){
