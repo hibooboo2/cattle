@@ -105,7 +105,6 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
-            logger.error("Failed to bind to LDAP", e);
             throw new RuntimeException(e);
         }
     }
