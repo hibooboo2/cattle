@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -64,9 +65,10 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
 //            projectMember = untransform(projectMember);
-            Identity identity  = identityManager.getIdentity(projectMember);
+            Identity identity  = getMemberIdentity(projectMember);
             policy.grantObjectAccess(identity);
-            return Arrays.asList(identity);
+            policy.grantObjectAccess(projectMember);
+            return Arrays.asList(projectMember);
         }
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
@@ -77,17 +79,21 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         }
         List<ProjectMember> membersToReturn = new ArrayList<>();
         for (ProjectMember member : members) {
-//            member = untransform(member);
+            member = untransform(member);
             membersToReturn.add(member);
             policy.grantObjectAccess(member);
         }
         List<Identity> identities = new ArrayList<>();
         for (ProjectMember member:members){
-            Identity identity = identityManager.getIdentity(member);
+            Identity identity = getMemberIdentity(member);
             identities.add(identity);
             policy.grantObjectAccess(identity);
         }
         return identities;
+    }
+
+    private Identity getMemberIdentity(ProjectMember member) {
+        return new Identity(identityManager.getIdentity(member), member.getRole(), member.getProjectId());
     }
 
     @Override

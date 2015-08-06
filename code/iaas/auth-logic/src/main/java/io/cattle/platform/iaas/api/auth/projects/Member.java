@@ -9,23 +9,46 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class Member  {
 
-    private String externalId;
-    private String externalIdType;
-    private String role;
-    private String name;
+    private final String profilePicture;
+    private final String profileUrl;
+    private final String login;
+    private final String externalId;
+    private final String externalIdType;
+    private final String role;
+    private final String name;
+    private final String projectId;
 
-    public Member(ProjectMember projectMember) {
+    public Member(ProjectMember projectMember, String projectId) {
         this.externalId = projectMember.getExternalId();
         this.externalIdType = projectMember.getExternalIdType();
         this.role = projectMember.getRole();
         this.name = projectMember.getName();
+        profilePicture = null;
+        profileUrl = null;
+        login = null;
+        this.projectId = projectId;
     }
 
-    public Member(Identity externalId, String role) {
-        this.externalId = externalId.getExternalId();
-        this.externalIdType = externalId.getExternalIdType();
+    public Member(Identity identity, String role) {
+        this.externalId = identity.getExternalId();
+        this.externalIdType = identity.getExternalIdType();
         this.role = role;
-        this.name = externalId.getName();
+        this.name = identity.getName();
+        this.login = identity.getLogin();
+        this.profileUrl = identity.getProfileUrl();
+        this.profilePicture = identity.getProfilePicture();
+        this.projectId = null;
+    }
+
+    public Member(Identity identity, String role, String projectId) {
+        this.externalId = identity.getExternalId();
+        this.externalIdType = identity.getExternalIdType();
+        this.role = role;
+        this.name = identity.getName();
+        this.login = identity.getLogin();
+        this.profileUrl = identity.getProfileUrl();
+        this.profilePicture = identity.getProfilePicture();
+        this.projectId = projectId;
     }
 
     public String getExternalId() {
@@ -72,10 +95,26 @@ public class Member  {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("externalId", externalId)
+                .append("identity", externalId)
                 .append("externalIdType", externalIdType)
                 .append("role", role)
                 .append("name", name)
                 .toString();
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public String getProfileUrl() {
+        return profileUrl;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getProjectId() {
+        return projectId;
     }
 }

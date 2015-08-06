@@ -25,6 +25,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.ObjectUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -324,7 +325,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 List<? extends ProjectMember> previousMembers = getActiveProjectMembers(project.getId());
                 Set<Member> otherPreviosMembers = new HashSet<>();
                 for (ProjectMember member : previousMembers) {
-                    otherPreviosMembers.add(new Member(member));
+                    String projectId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), member.getProjectId());
+                    otherPreviosMembers.add(new Member(member, projectId));
                 }
                 Set<Member> create = new HashSet<Member>(members);
                 Set<Member> delete = new HashSet<Member>(otherPreviosMembers);

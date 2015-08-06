@@ -145,6 +145,8 @@
         "identity.profilePicture": "r",
         "identity.profileUrl": "r",
         "identity.login": "r",
+        "identity.projectId": "r",
+        "identity.role": "r",
         "identity.all": "r",
 
         "image" : "r",
@@ -178,9 +180,8 @@
         "logConfig.driver" : "cr",
         "logConfig.config" : "cr",
 
-        "member" : "cr",
-        "member.role" : "cr",
-        "member.identity" : "cr",
+        "member" : "r",
+        "member.*" : "r",
 
         "mount" : "r",
         "mount.instanceId" : "r",
@@ -213,6 +214,9 @@
         "projectMember.name" : "r",
         "projectMember.externalId" : "cr",
         "projectMember.externalIdType" : "cr",
+        "projectMember.login" : "r",
+        "projectMember.profileUrl" : "r",
+        "projectMember.profilePicture" : "r",
         "projectMember.projectId" : "r",
 
         "register": "r",

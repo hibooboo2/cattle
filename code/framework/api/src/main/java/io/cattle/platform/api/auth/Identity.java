@@ -2,6 +2,7 @@ package io.cattle.platform.api.auth;
 
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
+import io.github.ibuildthecloud.gdapi.model.FieldType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -16,6 +17,8 @@ public class Identity {
     private final String externalIdType;
     private final String profileUrl;
     private final String login;
+    private final String role;
+    private final long projectId;
 
     @Field(required = false, nullable = true)
     public String getName() {
@@ -57,6 +60,15 @@ public class Identity {
         return login;
     }
 
+    @Field(required = false, nullable = true)
+    public String getRole() {
+        return role;
+    }
+
+    @Field(required = false, nullable = true)
+    public long getProjectId() {
+        return projectId;
+    }
 
     public Identity(String externalIdType, String externalId) {
         this(externalIdType, externalId, null, null, null, null);
@@ -73,6 +85,19 @@ public class Identity {
         } else {
             this.profilePicture = profilePicture;
         }
+        this.projectId = 0;
+        this.role = null;
+    }
+
+    public Identity(Identity identity, String role, long projectId){
+        this.externalId = identity.getExternalId();
+        this.name = identity.getName();
+        this.externalIdType = identity.getExternalIdType();
+        this.profileUrl = identity.getProfileUrl();
+        this.login = identity.getLogin();
+        this.profilePicture = identity.getProfilePicture();
+        this.projectId = projectId;
+        this.role = role;
     }
 
     @Override
