@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -20,7 +21,7 @@ public class LdapAuthImpl extends LdapConfigurable implements AccountLookup, Pri
             return null;
         }
         ldapUtils.findAndSetJWT();
-        return ldapUtils.getAccountFromJWT();
+        return getAccountAccessInternal();
     }
 
     @Override
@@ -31,6 +32,15 @@ public class LdapAuthImpl extends LdapConfigurable implements AccountLookup, Pri
     @Override
     public int getPriority() {
         return Priority.PRE;
+    }
+
+    public Account getAccountAccess(String token, ApiRequest request) {
+        request.setAttribute(LdapConstants.LDAP_JWT, token);
+        return getAccountAccessInternal();
+    }
+
+    private Account getAccountAccessInternal() {
+        return ldapUtils.getAccountFromJWT();
     }
 
     @Override
