@@ -23,7 +23,7 @@ public class Member  {
 
     public Member(Identity externalId, String role) {
         this.externalId = externalId.getExternalId();
-        this.externalIdType = externalId.getKind();
+        this.externalIdType = externalId.getExternalIdType();
         this.role = role;
         this.name = externalId.getName();
     }

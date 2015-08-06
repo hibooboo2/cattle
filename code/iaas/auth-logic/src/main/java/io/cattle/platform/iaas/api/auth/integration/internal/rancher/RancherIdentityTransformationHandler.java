@@ -21,11 +21,12 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
     @Override
     public Identity transform(Identity identity) {
-        if (identity.getKind().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
+        if (identity.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
             String accountId = ApiContext.getContext().getIdFormatter().parseId(identity.getExternalId());
             Account account = authDao.getAccountById(Long.valueOf(accountId));
             if (account != null) {
-                return new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName());
+                return new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
+                        null, null, null);
             }
         }
         return null;
@@ -33,11 +34,11 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
     @Override
     public Identity untransform(Identity identity) {
-        if (identity.getKind().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
+        if (identity.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
             Account account = authDao.getAccountById(Long.valueOf(identity.getExternalId()));
             if (account != null) {
                 String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-                return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName());
+                return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null);
             }
         }
         return null;
@@ -46,7 +47,8 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
     @Override
     public Set<Identity> getIdentities(Account account) {
         Set<Identity> identities = new HashSet<>();
-        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName()));
+        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
+                null, null, null));
         return identities;
     }
 

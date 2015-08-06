@@ -117,7 +117,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
         for (Map<String, Object> user: results){
             identities.add(new Identity(GithubConstants.ORG_SCOPE, String.valueOf(user.get("id")),
                     (String) user.get(GithubConstants.LOGIN), (String) user.get(GithubConstants.PROFILE_URL),
-                    (String) user.get(GithubConstants.PROFILE_PICTURE)));
+                    (String) user.get(GithubConstants.PROFILE_PICTURE), (String) user.get(GithubConstants.LOGIN)));
         }
         return identities;
     }
@@ -141,7 +141,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
         for (Map<String, Object> user: results){
             identities.add(new Identity(GithubConstants.USER_SCOPE, String.valueOf(user.get("id")),
                     (String) user.get(GithubConstants.LOGIN), (String) user.get(GithubConstants.PROFILE_URL),
-                    (String) user.get(GithubConstants.PROFILE_PICTURE)));
+                    (String) user.get(GithubConstants.PROFILE_PICTURE), (String) user.get(GithubConstants.LOGIN)));
         }
         return identities;
     }
@@ -207,7 +207,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             String profilePicture = org.getProfilePicture();
             String profileUrl = org.getProfileUrl();
             return new Identity(GithubConstants.TEAM_SCOPE, accountId, org.getAccountName() + ':' + accountName,
-                    profileUrl, profilePicture);
+                    profileUrl, profilePicture, null);
         } catch (IOException e) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve orgId from Github", null);
         }

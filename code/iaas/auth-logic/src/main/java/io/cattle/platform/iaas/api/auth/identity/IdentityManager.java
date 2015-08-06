@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -93,6 +94,10 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             authorize(identity);
         }
         return new ArrayList<>(identities);
+    }
+
+    public Identity getIdentity(ProjectMember member){
+        return getIdentity(member.getExternalIdType() + ':' + member.getExternalId());
     }
 
     @Inject

@@ -60,7 +60,7 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
         Set<Identity> identities = ldapIdentitySearchProvider.getIdentities(username, password);
         Identity gotIdentity = null;
         for (Identity identity: identities){
-            if (identity.getKind().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+            if (identity.getExternalIdType().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
                 gotIdentity = identity;
                 break;
             }
@@ -87,11 +87,9 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
         Map<String, Object> jsonData = new HashMap<>();
         jsonData.put(TokenUtils.TOKEN, LdapConstants.LDAP_JWT);
         jsonData.put(TokenUtils.ACCOUNT_ID, gotIdentity.getExternalId());
-        jsonData.put(LdapConstants.USERNAME, username);
-        jsonData.put(LdapConstants.LDAP_USER_ID, gotIdentity.getExternalId());
         List<String> groupsIdList = new ArrayList<>();
         for (Identity identity : identities) {
-            if (identity.getKind().equalsIgnoreCase(LdapConstants.GROUP_SCOPE)) {
+            if (identity.getExternalIdType().equalsIgnoreCase(LdapConstants.GROUP_SCOPE)) {
                 groupsIdList.add(identity.getExternalId());
             }
         }
@@ -100,7 +98,8 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, SecurityConstants.AUTHPROVIDER.get(), accountId, gotIdentity, new ArrayList<>(identities), SecurityConstants.SECURITY.get());
+        return new Token(jwt, SecurityConstants.AUTHPROVIDER.get(), accountId, gotIdentity,
+                new ArrayList<>(identities), SecurityConstants.SECURITY.get(), account.getKind());
     }
 
     @Override

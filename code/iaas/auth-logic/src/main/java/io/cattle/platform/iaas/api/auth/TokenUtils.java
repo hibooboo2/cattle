@@ -127,11 +127,14 @@ public abstract class TokenUtils  {
             return true;
         }
         if (StringUtils.isBlank(jwt)) {
-            for (Cookie cookie : request.getServletContext().getRequest().getCookies()) {
-                if (cookie.getName().equalsIgnoreCase(TOKEN)
-                        && StringUtils.isNotBlank(cookie.getValue())) {
-                    jwt = cookie.getValue();
-                    break;
+            Cookie[] cookies = request.getServletContext().getRequest().getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equalsIgnoreCase(TOKEN)
+                            && StringUtils.isNotBlank(cookie.getValue())) {
+                        jwt = cookie.getValue();
+                        break;
+                    }
                 }
             }
         }

@@ -13,8 +13,9 @@ public class Identity {
     private final String externalId;
     private final String profilePicture;
     private final String name;
-    private final String kind;
+    private final String externalIdType;
     private final String profileUrl;
+    private final String login;
 
     @Field(required = false, nullable = true)
     public String getName() {
@@ -27,8 +28,8 @@ public class Identity {
     }
 
     @Field(required = true, nullable = false)
-    public String getKind() {
-        return kind;
+    public String getExternalIdType() {
+        return externalIdType;
     }
 
     @Field(required = false, nullable = true)
@@ -38,7 +39,7 @@ public class Identity {
 
     @Field(required = false, nullable = true)
     public String getId() {
-        return kind + ':' + externalId;
+        return externalIdType + ':' + externalId;
     }
 
     @Field(required = false, nullable = true)
@@ -51,23 +52,22 @@ public class Identity {
         return profileUrl;
     }
 
-    public Identity(String identityType, String externalId) {
-        this(identityType, externalId, null);
+    @Field(required = false, nullable = true)
+    public String getLogin() {
+        return login;
     }
 
-    public Identity(String identityType, String externalId, String name) {
-        this(identityType, externalId, name, null);
+
+    public Identity(String externalIdType, String externalId) {
+        this(externalIdType, externalId, null, null, null, null);
     }
 
-    public Identity(String identityType, String externalId, String name, String profileUrl) {
-        this(identityType, externalId, name, profileUrl, null);
-    }
-
-    public Identity(String identityType, String externalId, String name, String profileUrl, String profilePicture) {
+    public Identity(String externalIdType, String externalId, String name, String profileUrl, String profilePicture, String login) {
         this.externalId = externalId;
         this.name = name;
-        this.kind = identityType;
+        this.externalIdType = externalIdType;
         this.profileUrl = profileUrl;
+        this.login = login;
         if (profilePicture == null) {
             this.profilePicture = "http://robohash.org/" + getId() + ".png?set=set2";
         } else {
@@ -85,7 +85,7 @@ public class Identity {
 
         return new EqualsBuilder()
                 .append(externalId, identity.externalId)
-                .append(kind, identity.kind)
+                .append(externalIdType, identity.externalIdType)
                 .isEquals();
     }
 
@@ -93,7 +93,7 @@ public class Identity {
     public int hashCode() {
         return new HashCodeBuilder(19, 43)
                 .append(externalId)
-                .append(kind)
+                .append(externalIdType)
                 .toHashCode();
     }
 
@@ -103,7 +103,7 @@ public class Identity {
                 .append("externalId", externalId)
                 .append("profilePicture", profilePicture)
                 .append("name", name)
-                .append("kind", kind)
+                .append("externalIdType", externalIdType)
                 .append("profileUrl", profileUrl)
                 .toString();
     }

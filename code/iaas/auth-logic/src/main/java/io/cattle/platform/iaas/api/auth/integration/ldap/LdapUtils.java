@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ObjectUtils;
+
 public class LdapUtils extends TokenUtils {
 
     public boolean isAllowed(Set<Identity> identities) {
@@ -42,8 +44,8 @@ public class LdapUtils extends TokenUtils {
             return identities;
         }
         List<String> groups = (List<String>) CollectionUtils.toList(jsonData.get(LdapConstants.LDAP_GROUPS));
-        identities.add(new Identity(LdapConstants.USER_SCOPE, (String) jsonData.get(LdapConstants.LDAP_USER_ID),
-                (String) jsonData.get(LdapConstants.USERNAME)));
+        String accountId = ObjectUtils.toString(jsonData.get(TokenUtils.ACCOUNT_ID), null);
+        identities.add(new Identity(LdapConstants.USER_SCOPE, accountId));
         for (String group : groups) {
             identities.add(new Identity(LdapConstants.GROUP_SCOPE, group));
         }

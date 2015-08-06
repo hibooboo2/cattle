@@ -315,21 +315,25 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             if (!hasPermission(search)){
                 return null;
             }
-            String kind;
+            String externalIdType;
             String accountName;
             String externalId;
+            String login;
             if (isType(search, LdapConstants.USER_OBJECT_CLASS.get())){
-                kind = LdapConstants.USER_SCOPE;
+                externalIdType = LdapConstants.USER_SCOPE;
                 accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
                 externalId = (String) search.get(LdapConstants.DN).get();
+                login = (String) search.get(LdapConstants.USER_LOGIN_FIELD.get()).get();
             } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS.get())) {
-                kind = LdapConstants.GROUP_SCOPE;
+                externalIdType = LdapConstants.GROUP_SCOPE;
                 accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
                 externalId = (String) search.get(LdapConstants.DN).get();
+                //TODO:Ask vincent if this should just be null since groups can't login.
+                login = accountName;
             } else {
                 return null;
             }
-            return new Identity(kind, externalId, accountName);
+            return new Identity(externalIdType, externalId, accountName, null, null, login);
         } catch (NamingException e) {
             return null;
         }

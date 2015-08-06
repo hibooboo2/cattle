@@ -38,6 +38,6 @@ public class GithubAccountInfo {
     }
 
     public Identity toIdentity(String scope) {
-        return new Identity(scope, accountId, accountName, profileUrl, profilePicture);
+        return new Identity(scope, accountId, accountName, profileUrl, profilePicture, accountName);
     }
 }

@@ -33,23 +33,18 @@ public class GithubIdentityTransformationHandler extends GithubConfigurable impl
 
     @Override
     public Identity transform(Identity identity) {
-        String id;
-        String name;
         GithubAccountInfo githubAccountInfo;
-        switch (identity.getKind()) {
+        switch (identity.getExternalIdType()) {
             case GithubConstants.USER_SCOPE:
                 githubAccountInfo = githubClient.getGithubUserByName(identity.getExternalId());
-                id = githubAccountInfo.getAccountId();
-                name = githubAccountInfo.getAccountName();
-                return new Identity(GithubConstants.USER_SCOPE, id, name);
+                return githubAccountInfo.toIdentity(GithubConstants.USER_SCOPE);
             case GithubConstants.ORG_SCOPE:
                 githubAccountInfo = githubClient.getGithubOrgByName(identity.getExternalId());
-                id = githubAccountInfo.getAccountId();
-                name = githubAccountInfo.getAccountName();
-                return new Identity(GithubConstants.ORG_SCOPE, id, name);
+                return githubAccountInfo.toIdentity(GithubConstants.ORG_SCOPE);
             case GithubConstants.TEAM_SCOPE:
                 String org = githubClient.getTeamOrgById(identity.getExternalId());
-                return new Identity(GithubConstants.TEAM_SCOPE, identity.getExternalId(), org + ":" + identity.getExternalId());
+                return new Identity(GithubConstants.TEAM_SCOPE, identity.getExternalId(), org + ":" + identity.getExternalId(),
+                        null, null, null);
             default:
                 return null;
         }
@@ -57,11 +52,9 @@ public class GithubIdentityTransformationHandler extends GithubConfigurable impl
 
     @Override
     public Identity untransform(Identity identity) {
-        switch (identity.getKind()) {
+        switch (identity.getExternalIdType()) {
             case GithubConstants.USER_SCOPE:
-                return new Identity(GithubConstants.USER_SCOPE, identity.getName(), identity.getName());
             case GithubConstants.ORG_SCOPE:
-                return new Identity(GithubConstants.ORG_SCOPE, identity.getName(), identity.getName());
             case GithubConstants.TEAM_SCOPE:
                 return identity;
             default:

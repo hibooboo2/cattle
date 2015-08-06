@@ -27,6 +27,7 @@ public class LdapConstants {
     public static final String TLS = "tls";
     public static final String TOKEN = "token";
     public static final String USERNAME = NAME + "UserName";
+    public static final String USERS_NAME = NAME + "UsersName";
 
 
     //Names for Settings in cattle.

@@ -64,7 +64,7 @@ public class Token {
         identities = null;
     }
 
-    public Token(String jwt, String authProvider, String accountId, Identity userIdentity, List<Identity> identities, boolean enabled) {
+    public Token(String jwt, String authProvider, String accountId, Identity userIdentity, List<Identity> identities, boolean enabled, String userType) {
         this.jwt = jwt;
         this.authProvider = authProvider;
         this.userIdentity = userIdentity;
@@ -77,7 +77,7 @@ public class Token {
         this.teams = null;
         this.security = null;
         this.clientId = null;
-        this.userType = userIdentity.getKind();
+        this.userType = userType;
     }
 
     public Token(String authProvider, boolean enabled) {

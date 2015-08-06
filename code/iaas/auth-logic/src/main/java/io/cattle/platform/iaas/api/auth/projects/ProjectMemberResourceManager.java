@@ -7,6 +7,7 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.json.JsonMapper;
@@ -42,6 +43,8 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    IdentityManager identityManager;
 
     private List<IdentityTransformationHandler> identityTransformationHandlers;
 
@@ -60,9 +63,10 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
                     policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
-            projectMember = untransform(projectMember);
-            policy.grantObjectAccess(projectMember);
-            return Arrays.asList(projectMember);
+//            projectMember = untransform(projectMember);
+            Identity identity  = identityManager.getIdentity(projectMember);
+            policy.grantObjectAccess(identity);
+            return Arrays.asList(identity);
         }
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
@@ -73,11 +77,17 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         }
         List<ProjectMember> membersToReturn = new ArrayList<>();
         for (ProjectMember member : members) {
-            member = untransform(member);
+//            member = untransform(member);
             membersToReturn.add(member);
             policy.grantObjectAccess(member);
         }
-        return membersToReturn;
+        List<Identity> identities = new ArrayList<>();
+        for (ProjectMember member:members){
+            Identity identity = identityManager.getIdentity(member);
+            identities.add(identity);
+            policy.grantObjectAccess(identity);
+        }
+        return identities;
     }
 
     @Override
@@ -104,7 +114,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             Identity idToUse = null;
             for (Identity identity : policy.getIdentities()) {
                 if (idToUse == null) {
-                    if (identity.getKind().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
+                    if (identity.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
                         idToUse = identity;
                     }
                 }
@@ -165,36 +175,11 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         this.identityTransformationHandlers = identityTransformationHandlers;
     }
 
-    public ProjectMember transform(ProjectMember member) {
-        Identity identity = new Identity(member.getExternalIdType(), member.getExternalId(), member.getName());
-        Identity newIdentity;
-        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
-            newIdentity = identityTransformationHandler.transform(identity);
-            if (newIdentity != null) {
-                break;
-            }
-        }
-        member.setName(identity.getName());
-        member.setExternalId(identity.getExternalId());
-        member.setExternalIdType(identity.getKind());
-        return member;
-    }
-
     public ProjectMember untransform(ProjectMember member) {
-        Identity identity = new Identity(member.getExternalIdType(), member.getExternalId(), member.getName());
-        Identity newIdentity = null;
-        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
-            newIdentity = identityTransformationHandler.untransform(identity);
-            if (newIdentity != null) {
-                break;
-            }
-        }
-        if (newIdentity == null) {
-            return null;
-        }
+        Identity newIdentity = identityManager.getIdentity(member);
         member.setName(newIdentity.getName());
         member.setExternalId(newIdentity.getExternalId());
-        member.setExternalIdType(newIdentity.getKind());
+        member.setExternalIdType(newIdentity.getExternalIdType());
         return member;
     }
 }

@@ -37,7 +37,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
         for(Account account: accounts){
             if (account != null) {
                 String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-                identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName()));
+                identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null));
             }
         }
         return identities;
@@ -62,7 +62,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
             return null;
         }
         accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-        return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName());
+        return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null);
     }
 
     @Override

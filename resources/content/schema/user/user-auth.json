@@ -141,9 +141,10 @@
         "identity": "r",
         "identity.name": "r",
         "identity.externalId": "r",
-        "identity.kind": "r",
+        "identity.externalIdType": "r",
         "identity.profilePicture": "r",
         "identity.profileUrl": "r",
+        "identity.login": "r",
         "identity.all": "r",
 
         "image" : "r",

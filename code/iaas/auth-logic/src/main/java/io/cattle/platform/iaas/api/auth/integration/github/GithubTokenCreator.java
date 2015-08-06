@@ -70,8 +70,7 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         Set<Identity> identities = new HashSet<>();
 
         idList.add(userAccountInfo.getAccountId());
-        Identity user = new Identity(GithubConstants.USER_SCOPE, userAccountInfo.getAccountId(),
-                userAccountInfo.getAccountName(), userAccountInfo.getProfileUrl(), userAccountInfo.getProfilePicture());
+        Identity user = userAccountInfo.toIdentity(GithubConstants.USER_SCOPE);
         identities.add(user);
 
         for (GithubAccountInfo info : orgAccountInfo) {
@@ -79,15 +78,15 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
             orgNames.add(info.getAccountName());
             orgIds.add(info.getAccountId());
             teamsAccountInfo.addAll(githubClient.getOrgTeamInfo(accessToken, info.getAccountName()));
-            identities.add(new Identity(GithubConstants.ORG_SCOPE, info.getAccountId(),
-                    info.getAccountName(), info.getProfileUrl(), info.getProfilePicture()));
+            identities.add(info.toIdentity(GithubConstants.ORG_SCOPE));
         }
 
         for (TeamAccountInfo info : teamsAccountInfo) {
             teamIds.add(info.getId());
             teamToOrg.put(info.getId(), info.getOrg());
             idList.add(info.getId());
-            identities.add(new Identity(GithubConstants.TEAM_SCOPE, info.getId(), info.getOrg() + ":" + info.getName()));
+            identities.add(new Identity(GithubConstants.TEAM_SCOPE, info.getId(), info.getOrg() + ":" + info.getName(),
+                    null, null, null));
         }
 
         Account account = null;
@@ -106,8 +105,7 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         } else {
             account = authDao.getAdminAccount();
             authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
-            authDao.ensureAllProjectsHaveNonRancherIdMembers(new Identity(GithubConstants.USER_SCOPE, userAccountInfo.getAccountId(),
-                    userAccountInfo.getAccountName()));
+            authDao.ensureAllProjectsHaveNonRancherIdMembers(userAccountInfo.toIdentity(GithubConstants.USER_SCOPE));
         }
         Map<String, Object> jsonData = new HashMap<>();
         jsonData.put(TokenUtils.TOKEN, GithubConstants.GITHUB_JWT);
@@ -125,7 +123,8 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
         //LEGACY: Used for old Implementation of projects/ Identities. Remove when vincent changes to new api.
         return new Token(jwt, user.getName(), orgNames, teamsAccountInfo, SecurityConstants.SECURITY.get(),
-                GithubConstants.GITHUB_CLIENT_ID.get(), user.getKind(), SecurityConstants.AUTHPROVIDER.get(), accountId, new ArrayList<>(identities));
+                GithubConstants.GITHUB_CLIENT_ID.get(), account.getKind(), SecurityConstants.AUTHPROVIDER.get(),
+                accountId, new ArrayList<>(identities));
     }
 
     @Override

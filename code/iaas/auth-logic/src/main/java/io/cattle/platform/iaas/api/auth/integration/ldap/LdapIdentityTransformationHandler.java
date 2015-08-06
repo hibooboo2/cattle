@@ -17,7 +17,7 @@ public class LdapIdentityTransformationHandler extends LdapConfigurable implemen
 
     @Override
     public Identity transform(Identity identity) {
-        switch (identity.getKind()) {
+        switch (identity.getExternalIdType()) {
             case LdapConstants.USER_SCOPE:
                 break;
             case LdapConstants.GROUP_SCOPE:
@@ -30,7 +30,7 @@ public class LdapIdentityTransformationHandler extends LdapConfigurable implemen
 
     @Override
     public Identity untransform(Identity identity) {
-        switch (identity.getKind()) {
+        switch (identity.getExternalIdType()) {
             case LdapConstants.USER_SCOPE:
                 break;
             case LdapConstants.GROUP_SCOPE:

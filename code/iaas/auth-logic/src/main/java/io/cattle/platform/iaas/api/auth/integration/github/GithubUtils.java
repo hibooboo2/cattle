@@ -40,7 +40,7 @@ public class GithubUtils extends TokenUtils {
         List<String> teamIds = (List<String>) CollectionUtils.toList(jsonData.get(GithubConstants.TEAM_IDS));
         List<String> orgIds = (List<String>) CollectionUtils.toList(jsonData.get(GithubConstants.ORG_IDS));
         String accountId = ObjectUtils.toString(jsonData.get(TokenUtils.ACCOUNT_ID), null);
-        identities.add(new Identity(GithubConstants.USER_SCOPE, accountId, (String) jsonData.get(GithubConstants.USERNAME)));
+        identities.add(new Identity(GithubConstants.USER_SCOPE, accountId));
         for (String teamId : teamIds) {
             identities.add(new Identity(GithubConstants.TEAM_SCOPE, teamId));
         }
