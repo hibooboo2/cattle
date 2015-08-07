@@ -52,7 +52,7 @@ public class GithubUtils extends TokenUtils {
 
     @Override
     protected String accessMode() {
-        return ACCESS_MODE.get();
+        return GithubConstants.ACCESS_MODE.get();
     }
 
     @Override
