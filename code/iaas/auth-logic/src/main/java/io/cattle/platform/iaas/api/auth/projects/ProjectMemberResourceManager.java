@@ -93,6 +93,9 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
     }
 
     private Identity getMemberIdentity(ProjectMember member) {
+        if (member == null){
+            return null;
+        }
         return new Identity(identityManager.getIdentity(member), member.getRole(), member.getProjectId());
     }
 
@@ -183,6 +186,9 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
 
     public ProjectMember untransform(ProjectMember member) {
         Identity newIdentity = identityManager.getIdentity(member);
+        if (newIdentity == null){
+            return null;
+        }
         member.setName(newIdentity.getName());
         member.setExternalId(newIdentity.getExternalId());
         member.setExternalIdType(newIdentity.getExternalIdType());
