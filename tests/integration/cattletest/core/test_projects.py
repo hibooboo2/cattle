@@ -380,7 +380,7 @@ def test_make_project_with_identity(admin_user_client):
     members = [{
         'role': 'owner',
         'externalId': identity.externalId,
-        'externalIdType': identity.kind
+        'externalIdType': identity.externalIdType
     }]
     _create_project_with_members(admin_user_client, client, members)
 
