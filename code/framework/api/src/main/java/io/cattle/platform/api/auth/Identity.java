@@ -2,7 +2,6 @@ package io.cattle.platform.api.auth;
 
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
-import io.github.ibuildthecloud.gdapi.model.FieldType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
