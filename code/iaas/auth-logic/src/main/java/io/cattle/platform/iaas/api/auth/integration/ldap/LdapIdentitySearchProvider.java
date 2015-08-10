@@ -271,12 +271,8 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
     }
 
     private LdapContext getServiceContext() {
-        if (isConfigured()) {
-            return login(getUserExternalId(LdapConstants.SERVICE_ACCOUNT_USER.get()),
-                    LdapConstants.SERVICE_ACCOUNT_PASSWORD.get());
-        } else {
-            return null;
-        }
+        return login(getUserExternalId(LdapConstants.SERVICE_ACCOUNT_USER.get()),
+                LdapConstants.SERVICE_ACCOUNT_PASSWORD.get());
     }
 
     private List<Identity> searchLdap(LdapContext context, String ldapScope, String name, String query) {

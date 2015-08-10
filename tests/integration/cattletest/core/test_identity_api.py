@@ -28,7 +28,7 @@ def test_search_identity_name(admin_user_client):
         assert identity.name == ids[0].name
         assert identity.id == ids[0].id
         assert identity.externalId == ids[0].externalId
-        assert identity.kind == ids[0].kind
+        assert identity.externalIdType == ids[0].externalIdType
 
 
 def test_search_identity_name_like(admin_user_client):
