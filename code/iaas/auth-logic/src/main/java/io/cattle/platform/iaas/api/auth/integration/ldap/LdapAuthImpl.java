@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
