@@ -271,8 +271,13 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
     }
 
     private LdapContext getServiceContext() {
-        return login(getUserExternalId(LdapConstants.SERVICE_ACCOUNT_USER.get()),
-                LdapConstants.SERVICE_ACCOUNT_PASSWORD.get());
+        try {
+            return login(getUserExternalId(LdapConstants.SERVICE_ACCOUNT_USER.get()),
+                    LdapConstants.SERVICE_ACCOUNT_PASSWORD.get());
+        } catch (RuntimeException e) {
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "CattleServiceAccount",
+                    "Could not connect to LDAP with service account, contact admin of Rancher or LDAP", null);
+        }
     }
 
     private List<Identity> searchLdap(LdapContext context, String ldapScope, String name, String query) {
