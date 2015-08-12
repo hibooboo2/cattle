@@ -105,7 +105,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
-            logger.info("Failed to login to ldap user:" + username + " password: " + password, e);
+            logger.error("Failed to login to ldap user:" + username + " password: " + password, e);
             throw new RuntimeException(e);
         }
     }
@@ -126,7 +126,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
         try {
             if (!results.hasMore()) {
-                logger.info("Cannot locate user information for " + name);
+                logger.error("Cannot locate user information for " + name);
                 return null;
             }
         } catch (NamingException e) {
@@ -307,7 +307,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 identities.add(attributesToIdentity(results.next().getAttributes()));
             }
         } catch (NamingException e) {
-            logger.info("While iterating results while searching: " + name, e);
+            logger.error("While iterating results while searching: " + name, e);
             return identities;
         }
         return identities;
