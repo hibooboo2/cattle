@@ -105,6 +105,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
+            logger.info("Failed to login to ldap user:" + username + " password: " + password, e);
             throw new RuntimeException(e);
         }
     }
@@ -114,11 +115,12 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         name = getSamName(name);
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
+        String query = null;
         try {
-            String query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
+            query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
             results = context.search(scope, query, controls);
         } catch (NamingException e) {
-            logger.error("Failed to search: " + name, e);
+            logger.error("Failed to search: " + query + "with DN=" + scope + " as the scope.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
                     "Organizational Unit not found.", null);
         }
@@ -289,7 +291,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         try {
             results = context.search(ldapScope, query, controls);
         } catch (NamingException e) {
-            logger.error("Failed to search: " + name, e);
+            logger.error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + ldapScope, e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
                     "Organizational Unit not found.", null);
         }
