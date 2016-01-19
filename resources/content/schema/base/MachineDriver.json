@@ -1,0 +1,15 @@
+{
+    "resourceFields": {
+        "uri": {
+            "required": true,
+            "nullable": false
+        }
+    },
+    "resourceActions" : {
+        "update" : {
+            "input" : "machineDriverUpdateInput",
+            "output" : "machineDriver"
+
+        }
+    }
+}
