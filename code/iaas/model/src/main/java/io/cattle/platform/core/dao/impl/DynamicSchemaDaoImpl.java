@@ -1,34 +1,117 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.*;
 import static io.cattle.platform.core.model.tables.DynamicSchemaTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
+import io.cattle.platform.core.addon.DynamicSchemaWithRole;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.model.DynamicSchema;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.InsertValuesStep2;
+import org.jooq.Record;
+import org.jooq.SelectConditionStep;
+import org.jooq.exception.InvalidResultException;
 
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
     @Override
-    public List<? extends DynamicSchema> getSchemas(long accountId) {
-        return create().selectFrom(DYNAMIC_SCHEMA)
-                .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
+    public List<? extends DynamicSchema> getSchemas(long accountId, String role) {
+        List<Record> records = schemaQuery(accountId, role)
+                .orderBy(DYNAMIC_SCHEMA.CREATED.asc())
                 .fetch();
+        Map<String, List<Record>> nameSchemas = new HashMap<>();
+        for (Record record: records) {
+            if (nameSchemas.get(record.getValue(DYNAMIC_SCHEMA.NAME)) == null) {
+                nameSchemas.put(record.getValue(DYNAMIC_SCHEMA.NAME), new ArrayList<Record>());
+            }
+            nameSchemas.get(record.getValue(DYNAMIC_SCHEMA.NAME)).add(record);
+        }
+        List<DynamicSchema> recordsToReturn = new ArrayList<>();
+        for (List<Record> list: nameSchemas.values()) {
+            DynamicSchema schema = pickRecordOnPriority(list, accountId, role);
+            if (schema != null) {
+                recordsToReturn.add(schema);
+            }
+        }
+        return recordsToReturn;
+    }
+
+    private SelectConditionStep<Record> schemaQuery(long accountId, String role) {
+        return create()
+                .select()
+                .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
+                .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
+                .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
+                        .and(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role))
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
+                .or(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
+                .or(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role)
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)));
     }
 
     @Override
-    public DynamicSchema getSchema(String name, long accountId) {
-        return create().selectFrom(DYNAMIC_SCHEMA)
-                .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
-                        .and(DYNAMIC_SCHEMA.NAME.eq(name)))
-                .orderBy(DYNAMIC_SCHEMA.CREATED.asc())
-                .fetchAny();
+    public DynamicSchema getSchema(String name, long accountId, String role) {
+
+        List<Record> records = schemaQuery(accountId, role)
+                .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                .fetch();
+
+        if (records.size() == 0 && name != null && name.endsWith("s")) {
+            return getSchema(TypeUtils.guessSingularName(name), accountId, role);
+        }
+
+        if (records.size() == 1) {
+            return records.get(0).into(DynamicSchema.class);
+        } else if (records.size() == 0) {
+            return null;
+        } else {
+            return pickRecordOnPriority(records, accountId, role);
+        }
+    }
+
+    private DynamicSchema pickRecordOnPriority(List<Record> records, long accountId, String role) {
+        if (records.size() == 1) {
+            return records.get(0).into(DynamicSchema.class);
+        }
+        Record record = null;
+        int lastPriority = 0;
+        for (Record r: records) {
+            DynamicSchemaWithRole withRole = r.into(DynamicSchemaWithRole.class);
+            int priority = 0;
+            if (withRole.getAccountId().equals(accountId) && StringUtils.equals(withRole.getRole(), role)) {
+                priority = 3;
+            } else if (withRole.getAccountId().equals(accountId) && withRole.getRole() == null) {
+                priority = 2;
+            } else if (role != null && withRole.getRole().equals(role)) {
+                priority = 1;
+            }
+            if (priority > lastPriority) {
+                lastPriority = priority;
+                record = r;
+            } else if (priority == lastPriority && priority != 0 &&
+                    !record.getValue(DYNAMIC_SCHEMA.UUID).equals(withRole.getUuid())) {
+                throw new InvalidResultException("Multiple dynamic schemas found of the" +
+                        " same role and account id combination. ");
+            }
+        }
+        return record == null ? null : record.into(DynamicSchema.class);
     }
 
     @Override
@@ -65,6 +148,50 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                         .and(INSTANCE.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
                 ).fetch().intoArray(INSTANCE.AGENT_ID));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void createRoles(DynamicSchema dynamicSchema) {
+        List<String> roles = (List<String>) CollectionUtils.toList(CollectionUtils.getNestedValue(dynamicSchema.getData(),
+                "fields", "roles"));
+        InsertValuesStep2<DynamicSchemaRoleRecord, Long, String> insertStart = create()
+                .insertInto(DYNAMIC_SCHEMA_ROLE, DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID, DYNAMIC_SCHEMA_ROLE.ROLE);
+        for (String role: roles) {
+                    insertStart = insertStart.values(dynamicSchema.getId(), role);
+        }
+        insertStart.execute();
+    }
+
+    @Override
+    public void removeRoles(DynamicSchema dynamicSchema) {
+        create().delete(DYNAMIC_SCHEMA_ROLE)
+                .where(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(dynamicSchema.getId()))
+                .execute();
+
+    }
+
+    @Override
+    public boolean isUnique(String name, List<String> roles) {
+        List<DynamicSchemaWithRole> withRoles =  create()
+                .select()
+                .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
+                .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
+                .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
+                .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
+                .fetch().into(DynamicSchemaWithRole.class);
+        if (withRoles.isEmpty()) {
+            return true;
+        }
+
+        for (DynamicSchemaWithRole schema: withRoles) {
+            if (roles.contains(schema.getRole())) {
+                return false;
+            }
+        }
+        return true;
+
     }
 
 }

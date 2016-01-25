@@ -64,6 +64,48 @@ def super_client(request):
     return _get_super_client(request)
 
 
+@pytest.fixture(scope='module')
+def user_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='user').user_client
+
+
+@pytest.fixture(scope='module')
+def read_admin_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='readAdmin').user_client
+
+
+@pytest.fixture(scope='module')
+def project_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='project').user_client
+
+
+@pytest.fixture(scope='module')
+def token_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='token').user_client
+
+
+@pytest.fixture(scope='module')
+def agent_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='agent').user_client
+
+
+@pytest.fixture(scope='module')
+def agent_register_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='agentRegister').user_client
+
+
+@pytest.fixture(scope='module')
+def service_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='service').user_client
+
+
 def init(admin_user_client):
     kv = {
         'task.process.replay.schedule': '2',

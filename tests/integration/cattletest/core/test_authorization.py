@@ -1,57 +1,15 @@
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='module')
-def user_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='user').user_client
-
-
-@pytest.fixture(scope='module')
-def read_admin_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='readAdmin').user_client
-
-
-@pytest.fixture(scope='module')
-def project_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='project').user_client
-
-
-@pytest.fixture(scope='module')
-def token_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='token').user_client
-
-
-@pytest.fixture(scope='module')
-def agent_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='agent').user_client
-
-
-@pytest.fixture(scope='module')
-def agent_register_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='agentRegister').user_client
-
-
-@pytest.fixture(scope='module')
-def service_client(admin_user_client):
-    return create_context(admin_user_client, create_project=False,
-                          add_host=False, kind='service').user_client
-
-
 def test_user_types(user_client, adds=set(), removes=set()):
     types = {
         'account',
         'addOutputsInput',
         'addRemoveClusterHostInput',
         'addRemoveServiceLinkInput',
-        'amazonec2Config',
         'apiKey',
         'auditLog',
+        'baseMachineConfig',
         'certificate',
         'changeSecretInput',
         'cluster',
@@ -62,11 +20,9 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'containerExec',
         'containerLogs',
         'credential',
-        'digitaloceanConfig',
         'dnsService',
         'environment',
         'environmentUpgrade',
-        'exoscaleConfig',
         'externalService',
         'externalEvent',
         'externalServiceEvent',
@@ -96,15 +52,12 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'machine',
         'mount',
         'network',
-        'openstackConfig',
-        'packetConfig',
         'password',
         'physicalHost',
         'port',
         'project',
         'projectMember',
         'pullTask',
-        'rackspaceConfig',
         'register',
         'registrationToken',
         'registry',
@@ -118,18 +71,13 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'setProjectMembersInput',
         'setServiceLinksInput',
         'snapshot',
-        'softlayerConfig',
         'statsAccess',
         'storagePool',
         'typeDocumentation',
         'userPreference',
-        'virtualboxConfig',
-        'vmwarevcloudairConfig',
-        'vmwarevsphereConfig',
         'volume',
         'launchConfig',
         'serviceEvent',
-        'azureConfig',
         'activeSetting',
         'serviceConsumeMap',
         'setting',
@@ -143,7 +91,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
-        'ubiquityConfig',
         'virtualMachine',
         'virtualMachineDisk',
         'publicEndpoint',
@@ -223,7 +170,7 @@ def test_token_types(token_client):
 
 def test_service_types(service_client):
     # Almost the same as admin user
-    test_admin_types(service_client, adds={'subscribe'},
+    test_admin_types(service_client, adds={'subscribe', 'dynamicSchema'},
                      removes={'userPreference'})
 
 
@@ -240,9 +187,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'addRemoveClusterHostInput',
         'addRemoveServiceLinkInput',
         'agent',
-        'amazonec2Config',
         'apiKey',
         'auditLog',
+        'baseMachineConfig',
         'certificate',
         'changeSecretInput',
         'cluster',
@@ -257,11 +204,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'credential',
         'databasechangelog',
         'databasechangeloglock',
-        'digitaloceanConfig',
         'dnsService',
         'environment',
         'environmentUpgrade',
-        'exoscaleConfig',
         'extensionImplementation',
         'extensionPoint',
         'externalHandler',
@@ -299,11 +244,12 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'localAuthConfig',
         'logConfig',
         'machine',
+        'machineDriver',
+        'machineDriverUpdateInput',
+        'machineDriverErrorInput',
         'mount',
         'network',
-        'openstackConfig',
         'openldapconfig',
-        'packetConfig',
         'password',
         'physicalHost',
         'port',
@@ -314,7 +260,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'projectMember',
         'publish',
         'pullTask',
-        'rackspaceConfig',
         'register',
         'registrationToken',
         'registry',
@@ -330,7 +275,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'setServiceLinksInput',
         'setting',
         'snapshot',
-        'softlayerConfig',
         'stateTransition',
         'statsAccess',
         'storagePool',
@@ -338,15 +282,11 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'taskInstance',
         'typeDocumentation',
         'userPreference',
-        'virtualboxConfig',
-        'vmwarevcloudairConfig',
-        'vmwarevsphereConfig',
         'virtualMachine',
         'virtualMachineDisk',
         'volume',
         'launchConfig',
         'serviceEvent',
-        'azureConfig',
         'serviceConsumeMap',
         'dockerBuild',
         'secondaryLaunchConfig',
@@ -357,7 +297,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
-        'ubiquityConfig',
         'publicEndpoint',
         'haproxyConfig',
         'serviceRestart',
@@ -1351,128 +1290,6 @@ def test_account_resource_auth(admin_user_client):
         'purge',
         'create'
     ])
-
-
-def test_machine(admin_user_client, user_client, service_client,
-                 project_client):
-    auth_check(admin_user_client.schema, 'machine', 'r', {
-        'driver': 'r',
-        'accountId': 'r',
-        'externalId': 'r',
-        'data': 'r',
-        'authCertificateAuthority': 'r',
-        'labels': 'r',
-        'authKey': 'r',
-        'engineInstallUrl': 'r',
-        'dockerVersion': 'r',
-        'engineOpt': 'r',
-        'engineInsecureRegistry': 'r',
-        'engineRegistryMirror': 'r',
-        'engineLabel': 'r',
-        'engineStorageDriver': 'r',
-        'engineEnv': 'r',
-        'virtualboxConfig': 'r',
-        'digitaloceanConfig': 'r',
-        'amazonec2Config': 'r',
-        'rackspaceConfig': 'r',
-        'packetConfig': 'r',
-        'softlayerConfig': 'r',
-        'vmwarevsphereConfig': 'r',
-        'exoscaleConfig': 'r',
-        'vmwarevcloudairConfig': 'r',
-        'openstackConfig': 'r',
-        'azureConfig': 'r',
-        'ubiquityConfig': 'r',
-    })
-
-    auth_check(user_client.schema, 'machine', 'r', {
-        'driver': 'r',
-        'accountId': 'r',
-        'externalId': 'r',
-        'authCertificateAuthority': 'r',
-        'labels': 'r',
-        'authKey': 'r',
-        'engineInstallUrl': 'r',
-        'dockerVersion': 'r',
-        'engineOpt': 'r',
-        'engineInsecureRegistry': 'r',
-        'engineRegistryMirror': 'r',
-        'engineLabel': 'r',
-        'engineStorageDriver': 'r',
-        'engineEnv': 'r',
-        'virtualboxConfig': 'r',
-        'digitaloceanConfig': 'r',
-        'amazonec2Config': 'r',
-        'rackspaceConfig': 'r',
-        'packetConfig': 'r',
-        'softlayerConfig': 'r',
-        'vmwarevsphereConfig': 'r',
-        'exoscaleConfig': 'r',
-        'vmwarevcloudairConfig': 'r',
-        'openstackConfig': 'r',
-        'azureConfig': 'r',
-        'ubiquityConfig': 'r',
-    })
-
-    auth_check(project_client.schema, 'machine', 'crd', {
-        'driver': 'r',
-        'accountId': 'r',
-        'externalId': 'r',
-        'authCertificateAuthority': 'cr',
-        'labels': 'cr',
-        'authKey': 'cr',
-        'engineInstallUrl': 'cr',
-        'dockerVersion': 'cr',
-        'engineOpt': 'cr',
-        'engineInsecureRegistry': 'cr',
-        'engineRegistryMirror': 'cr',
-        'engineLabel': 'cr',
-        'engineStorageDriver': 'cr',
-        'engineEnv': 'cr',
-        'virtualboxConfig': 'cr',
-        'digitaloceanConfig': 'cr',
-        'amazonec2Config': 'cr',
-        'rackspaceConfig': 'cr',
-        'packetConfig': 'cr',
-        'softlayerConfig': 'cr',
-        'vmwarevsphereConfig': 'cr',
-        'exoscaleConfig': 'cr',
-        'vmwarevcloudairConfig': 'cr',
-        'openstackConfig': 'cr',
-        'azureConfig': 'cr',
-        'ubiquityConfig': 'cr',
-    })
-
-    auth_check(service_client.schema, 'machine', 'crud', {
-        'driver': 'r',
-        'accountId': 'r',
-        'externalId': 'r',
-        'data': 'cru',
-        'authCertificateAuthority': 'cr',
-        'labels': 'cr',
-        'authKey': 'cr',
-        'engineInstallUrl': 'cr',
-        'dockerVersion': 'cr',
-        'engineOpt': 'cr',
-        'engineInsecureRegistry': 'cr',
-        'engineRegistryMirror': 'cr',
-        'engineLabel': 'cr',
-        'engineStorageDriver': 'cr',
-        'engineEnv': 'cr',
-        'extractedConfig': 'ru',
-        'virtualboxConfig': 'cr',
-        'digitaloceanConfig': 'cr',
-        'amazonec2Config': 'cr',
-        'rackspaceConfig': 'cr',
-        'packetConfig': 'cr',
-        'softlayerConfig': 'cr',
-        'vmwarevsphereConfig': 'cr',
-        'exoscaleConfig': 'cr',
-        'vmwarevcloudairConfig': 'cr',
-        'openstackConfig': 'cr',
-        'azureConfig': 'cr',
-        'ubiquityConfig': 'cr',
-    })
 
 
 def test_physical_host(admin_user_client, user_client, service_client,

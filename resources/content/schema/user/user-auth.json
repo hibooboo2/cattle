@@ -43,6 +43,8 @@
 
         "auditLog.resourceActions\\..*" : "",
 
+        "baseMachineConfig": "r",
+
         "changeSecretInput" : "cr",
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
@@ -247,6 +249,8 @@
         "password.publicValue" : "cr",
 
         "physicalHost": "r",
+        "physicalHost.externalId": "r",
+        "physicalHost.driver": "r",
 
         "port" : "r",
         "port.instanceId" : "r",
