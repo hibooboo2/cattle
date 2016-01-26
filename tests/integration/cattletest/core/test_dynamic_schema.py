@@ -1,5 +1,8 @@
 from common_fixtures import *  # NOQA
 from gdapi import ApiError
+from test_authorization import user_client  # NOQA
+from test_authorization import service_client  # NOQA
+from test_authorization import project_client  # NOQA
 
 DEFINITION = '''
     {
@@ -13,7 +16,7 @@ DEFINITION = '''
     '''
 
 
-def test_schema_lifecycle(context, client, service_client):
+def test_schema_lifecycle(context, client, service_client):  # NOQA
     schema = random_str()
     got_schema = client.by_id_schema(schema)
     assert got_schema is None
@@ -41,7 +44,7 @@ def test_schema_lifecycle(context, client, service_client):
     assert got_schema is None
 
 
-def test_invalid_schema_definition(context, client, service_client):
+def test_invalid_schema_definition(context, client, service_client):  # NOQA
     with pytest.raises(ApiError) as e:
         service_client.create_dynamic_schema(
             accountId=context.project.id,
@@ -53,7 +56,7 @@ def test_invalid_schema_definition(context, client, service_client):
     assert e.value.error.fieldName == 'definition'
 
 
-def test_schema_roles(service_client, user_client, project_client):
+def test_schema_roles(service_client, user_client, project_client):  # NOQA
     schema = random_str()
     got_schema = project_client.by_id_schema(schema)
     assert got_schema is None
