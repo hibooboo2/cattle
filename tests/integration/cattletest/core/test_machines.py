@@ -162,6 +162,102 @@ MACHINE_DEFINITION = '''
 }
 '''
 
+SUPER_MACHINE_DEFINITION = '''
+{
+    "collectionMethods":[
+        "GET",
+        "POST",
+        "DELETE"
+    ],
+    "resourceMethods":[
+        "GET",
+        "DELETE"
+    ],
+    "resourceFields":{
+        "name":{
+            "type":"string",
+            "nullable":false,
+            "minLength":1,
+            "required":true,
+            "create":true
+        },
+        "authCertificateAuthority":{
+            "type":"string",
+            "nullable":true,
+            "create":true
+        },
+        "fooConfig":{
+            "type":"fooConfig",
+            "nullable":true,
+            "required":false,
+            "create":true
+        },
+        "barConfig":{
+            "type":"barConfig",
+            "nullable":true,
+            "required":false,
+            "create":true
+        },
+        "authKey":{
+            "type":"string",
+            "nullable":true,
+            "create":true
+        },
+        "labels":{
+            "type":"map[string]",
+            "nullable":true,
+            "create":true
+        },
+        "engineInstallUrl":{
+            "type":"string",
+            "nullable":true,
+            "create":true
+        },
+        "dockerVersion":{
+            "type":"string",
+            "nullable":true,
+            "create":true
+        },
+        "engineOpt":{
+            "type":"map[string]",
+            "nullable":true,
+            "create":true
+        },
+        "engineInsecureRegistry":{
+            "type":"array[string]",
+            "nullable":true,
+            "create":true
+        },
+        "engineRegistryMirror":{
+            "type":"array[string]",
+            "nullable":true,
+            "create":true
+        },
+        "engineLabel":{
+            "type":"map[string]",
+            "nullable":true,
+            "create":true
+        },
+        "engineStorageDriver":{
+            "type":"string",
+            "nullable":true,
+            "create":true
+        },
+        "extractedConfig":{
+            "type":"string",
+            "nullable":true,
+            "create":true,
+            "update":true
+        },
+        "engineEnv":{
+            "type":"map[string]",
+            "nullable":true,
+            "create":true
+        }
+    }
+}
+'''
+
 
 MACHINE_READ_ONLY_DEFINITION = '''
 {
@@ -258,8 +354,13 @@ def machine_context(admin_user_client, service_client):  # NOQA
                                 name='machine',
                                 parent='physicalHost',
                                 definition=MACHINE_DEFINITION,
-                                roles=['project', 'owner', 'member',
-                                       'superadmin']))
+                                roles=['project', 'owner', 'member']))
+    service_client.wait_success(service_client.create_dynamic_schema(
+                                accountId=ctx.project.id,
+                                name='machine',
+                                parent='physicalHost',
+                                definition=SUPER_MACHINE_DEFINITION,
+                                roles=['superadmin']))
     service_client.wait_success(service_client.create_dynamic_schema(
                                 accountId=ctx.project.id,
                                 name='machine',
@@ -427,12 +528,12 @@ def test_config_link_readonly(admin_user_client, super_client, request,
 
     super_client.update(host, extractedConfig='hello')
 
-    super_client._headers = new_headers
     old_headers = super_client._headers
+    super_client._headers = new_headers
     super_client.reload_schema()
 
     host = super_client.reload(host)
-    # assert 'config' in host.links
+    assert 'config' in host.links
 
     super_client._headers = old_headers
     super_client.reload_schema()
