@@ -650,8 +650,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     @Override
     public Schema getSchema(String type) {
-        return schemasByName.get(lower(type));
-    }
+        return schemasByName.get(lower(type));    }
 
     @Override
     public Class<?> getSchemaClass(String type) {

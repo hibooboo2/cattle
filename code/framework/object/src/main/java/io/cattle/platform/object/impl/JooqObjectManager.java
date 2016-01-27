@@ -115,11 +115,26 @@ public class JooqObjectManager extends AbstractObjectManager {
         });
     }
 
+    @Override
+    public <T> T setFields(final Schema schema, final Object obj, final Map<String, Object> values) {
+        return Idempotent.change(new IdempotentExecution<T>() {
+            @Override
+            public T execute() {
+                return setFieldsInternal(schema, obj, values);
+            }
+        });
+    }
+
     @SuppressWarnings("unchecked")
     protected <T> T setFieldsInternal(final Object obj, final Map<String, Object> values) {
+       return setFieldsInternal(null, obj, values);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T setFieldsInternal(final Schema schema, final Object obj, final Map<String, Object> values) {
         final List<UpdatableRecord<?>> pending = new ArrayList<UpdatableRecord<?>>();
         Map<Object, Object> toWrite = toObjectsToWrite(obj, values);
-        setFields(obj, toWrite, pending);
+        setFields(schema, obj, toWrite, pending);
 
         if (pending.size() == 1) {
             persistRecord(pending.get(0));
@@ -138,9 +153,11 @@ public class JooqObjectManager extends AbstractObjectManager {
     }
 
     @SuppressWarnings("unchecked")
-    protected void setFields(Object obj, Map<Object, Object> toWrite, List<UpdatableRecord<?>> result) {
+    protected void setFields(Schema schema, Object obj, Map<Object, Object> toWrite, List<UpdatableRecord<?>> result) {
         String type = getPossibleSubType(obj);
-        Schema schema = schemaFactory.getSchema(type);
+        if (schema == null) {
+            schema = schemaFactory.getSchema(type);
+        }
 
         UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
 
@@ -166,7 +183,7 @@ public class JooqObjectManager extends AbstractObjectManager {
                     continue;
                 }
                 Object refObj = loadResource(rel.getObjectType(), id);
-                setFields(refObj, (Map<Object, Object>) value, result);
+                setFields(schema, refObj, (Map<Object, Object>) value, result);
             }
         }
 

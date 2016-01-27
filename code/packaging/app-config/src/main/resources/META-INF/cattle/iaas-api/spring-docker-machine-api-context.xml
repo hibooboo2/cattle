@@ -16,14 +16,6 @@
         </property>
     </bean>
 
-    <bean id="MachineTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
-        <property name="typeNames">
-            <set>
-                <value>machine,parent=physicalHost</value>
-            </set>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.docker.machine.api.filter.MachineValidationFilter" />
     <bean class="io.cattle.platform.docker.machine.api.MachineLinkFilter" />
 </beans>

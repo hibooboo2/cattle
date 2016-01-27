@@ -122,6 +122,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         for (AuthorizationProvider auth : authorizationProviders) {
             factory = auth.getSchemaFactory(account, policy, request);
             if (factory != null) {
+                request.getServletContext().getResponse().addHeader("ROLE", auth.getRole(account, policy, request));
                 break;
             }
         }

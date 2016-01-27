@@ -95,7 +95,8 @@ public class SampleDataStartupV4 extends AbstractSampleData {
                             "        }\n" +
                             "    }\n" +
                             "}\n", DYNAMIC_SCHEMA.PARENT, "physicalHost", DYNAMIC_SCHEMA.ACCOUNT_ID, serviceAccount.getId(),
-                    "roles", Arrays.asList("owner", "member", "project"));
+                    "roles", Arrays.asList("owner", "member", "project"),
+                    DYNAMIC_SCHEMA.ACCOUNT_ID, null);
     Map<String, Object> properties = objectManager.convertToPropertiesFor(DynamicSchemaRecord.class, props);
     toCreate.add(getObjectManager().create(DynamicSchema.class, properties));
     props = CollectionUtils.asMap
@@ -172,7 +173,8 @@ public class SampleDataStartupV4 extends AbstractSampleData {
                             "        }\n" +
                             "    }\n" +
                             "}\n", DYNAMIC_SCHEMA.PARENT, "physicalHost", DYNAMIC_SCHEMA.ACCOUNT_ID, serviceAccount.getId(),
-                    "roles", Arrays.asList("service"));
+                    "roles", Arrays.asList("service"),
+                    DYNAMIC_SCHEMA.ACCOUNT_ID, null);
     properties = objectManager.convertToPropertiesFor(DynamicSchemaRecord.class, props);
     toCreate.add(getObjectManager().create(DynamicSchema.class, properties));
     props = CollectionUtils.asMap
@@ -236,7 +238,8 @@ public class SampleDataStartupV4 extends AbstractSampleData {
                             "        }\n" +
                             "    }\n" +
                             "}\n", DYNAMIC_SCHEMA.PARENT, "physicalHost", DYNAMIC_SCHEMA.ACCOUNT_ID, serviceAccount.getId(),
-                    "roles", Arrays.asList("user", "admin", "readAdmin", "readonly"));
+                    "roles", Arrays.asList("user", "admin", "readAdmin", "readonly"),
+                    DYNAMIC_SCHEMA.ACCOUNT_ID, null);
     properties = objectManager.convertToPropertiesFor(DynamicSchemaRecord.class, props);
     toCreate.add(getObjectManager().create(DynamicSchema.class, properties));
 

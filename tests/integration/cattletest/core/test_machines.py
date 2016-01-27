@@ -81,6 +81,7 @@ MACHINE_DEFINITION = '''
     ],
     "resourceMethods":[
         "GET",
+        "PUT",
         "DELETE"
     ],
     "resourceFields":{
@@ -171,6 +172,7 @@ SUPER_MACHINE_DEFINITION = '''
     ],
     "resourceMethods":[
         "GET",
+        "PUT",
         "DELETE"
     ],
     "resourceFields":{
@@ -262,10 +264,10 @@ SUPER_MACHINE_DEFINITION = '''
 MACHINE_READ_ONLY_DEFINITION = '''
 {
     "collectionMethods":[
-        "GET",
+        "GET"
     ],
     "resourceMethods":[
-        "GET",
+        "GET"
     ],
     "resourceFields":{
         "name":{
@@ -333,40 +335,48 @@ MACHINE_READ_ONLY_DEFINITION = '''
 '''
 
 
+def remove_schemas(service_client, schemas):  # NOQA
+    for schema in schemas:
+        got_schemas = service_client.list_dynamic_schema(name=schema)
+        for got_schema in got_schemas:
+            if got_schema.state != 'purged':
+                service_client.wait_success(got_schema.remove())
+
+
 @pytest.fixture(scope='module')  # NOQA
-def machine_context(admin_user_client, service_client):  # NOQA
+def machine_context(admin_user_client, service_client,  # NOQA
+                    super_client):  # NOQA
     ctx = create_context(admin_user_client, create_project=True,
                          add_host=True)
+    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
     service_client.wait_success(service_client.create_dynamic_schema(
-                                accountId=ctx.project.id,
                                 name='fooConfig',
                                 parent='baseMachineConfig',
                                 definition=FOO_DEFINITION,
-                                roles=[]))
+                                roles=['project', 'owner', 'member',
+                                       'superadmin', 'readonly']))
     service_client.wait_success(service_client.create_dynamic_schema(
-                                accountId=ctx.project.id,
                                 name='barConfig',
                                 parent='baseMachineConfig',
                                 definition=BAR_DEFINITION,
-                                roles=[]))
+                                roles=['project', 'owner', 'member',
+                                       'superadmin', 'readonly']))
     service_client.wait_success(service_client.create_dynamic_schema(
-                                accountId=ctx.project.id,
                                 name='machine',
                                 parent='physicalHost',
                                 definition=MACHINE_DEFINITION,
                                 roles=['project', 'owner', 'member']))
     service_client.wait_success(service_client.create_dynamic_schema(
-                                accountId=ctx.project.id,
                                 name='machine',
                                 parent='physicalHost',
                                 definition=SUPER_MACHINE_DEFINITION,
-                                roles=['superadmin']))
+                                roles=['superadmin', 'admin']))
     service_client.wait_success(service_client.create_dynamic_schema(
-                                accountId=ctx.project.id,
                                 name='machine',
                                 parent='physicalHost',
-                                definition=MACHINE_DEFINITION,
-                                roles=['readonly']))
+                                definition=MACHINE_READ_ONLY_DEFINITION,
+                                roles=['readonly', 'agent']))
+    super_client.reload_schema()
     ctx.client.reload_schema()
     return ctx
 
@@ -404,9 +414,10 @@ def test_machine_lifecycle(super_client, machine_context,
     hosts = agent.hosts()
 
     assert len(hosts) == 1
-    host = hosts[0]
-    assert host.physicalHostId == machine.id
+    host = hosts[0].physicalHost()
+    assert host.kind == 'machine'
     assert machine.accountId == host.accountId
+    assert machine.uuid == host.uuid
 
     # Need to force a ping because they cause physical hosts to be created
     # under non-machine use cases. Ensures the machine isnt overridden
@@ -528,15 +539,8 @@ def test_config_link_readonly(admin_user_client, super_client, request,
 
     super_client.update(host, extractedConfig='hello')
 
-    old_headers = super_client._headers
-    super_client._headers = new_headers
-    super_client.reload_schema()
-
     host = super_client.reload(host)
     assert 'config' in host.links
-
-    super_client._headers = old_headers
-    super_client.reload_schema()
 
     host = user1_client.reload(host)
     assert 'config' in host.links
