@@ -2,8 +2,8 @@
   "resourceFields": {
     "roles": {
         "type" : "array[string]",
-        "nullable" : false,
-        "required" : true
+        "nullable" : true,
+        "required" : false
     }
   }
 }

@@ -61,8 +61,10 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                         .and(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role))
                         .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
                 .or(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
+                        .and(DYNAMIC_SCHEMA_ROLE.ROLE.isNull())
                         .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
                 .or(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role)
+                        .and(DYNAMIC_SCHEMA.ACCOUNT_ID.isNull())
                         .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)));
     }
 
@@ -95,11 +97,15 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         for (Record r: records) {
             DynamicSchemaWithRole withRole = r.into(DynamicSchemaWithRole.class);
             int priority = 0;
-            if (withRole.getAccountId().equals(accountId) && StringUtils.equals(withRole.getRole(), role)) {
+            if (withRole.getAccountId() != null &&
+                    withRole.getAccountId().equals(accountId) &&
+                    StringUtils.equals(withRole.getRole(), role)) {
                 priority = 3;
-            } else if (withRole.getAccountId().equals(accountId) && withRole.getRole() == null) {
+            } else if (withRole.getAccountId() != null &&
+                    withRole.getAccountId().equals(accountId) &&
+                    withRole.getRole() == null) {
                 priority = 2;
-            } else if (role != null && withRole.getRole().equals(role)) {
+            } else if (withRole.getAccountId() == null && role != null && withRole.getRole().equals(role)) {
                 priority = 1;
             }
             if (priority > lastPriority) {
@@ -172,20 +178,41 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
     }
 
     @Override
-    public boolean isUnique(String name, List<String> roles) {
-        List<DynamicSchemaWithRole> withRoles =  create()
-                .select()
-                .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
-                .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
-                .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
-                .and(DYNAMIC_SCHEMA.NAME.eq(name))
-                .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
-                .fetch().into(DynamicSchemaWithRole.class);
-        if (withRoles.isEmpty()) {
+    public boolean isUnique(String name, List<String> roles, Long accountId) {
+        List<DynamicSchemaWithRole> schemas;
+        if (accountId == null) {
+            schemas = create()
+                    .select()
+                    .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
+                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
+                    .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
+                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                    .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
+                    .fetch().into(DynamicSchemaWithRole.class);
+        } else if (roles == null || roles.isEmpty()) {
+            return null == create().select().from(DYNAMIC_SCHEMA)
+                    .leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
+                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
+                    .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
+                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                    .and(DYNAMIC_SCHEMA_ROLE.ROLE.isNull())
+                    .fetchAny();
+        } else {
+            schemas = create()
+                    .select()
+                    .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
+                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
+                    .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
+                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                    .and(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
+                    .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
+                    .fetch().into(DynamicSchemaWithRole.class);
+        }
+        if (schemas.isEmpty()) {
             return true;
         }
 
-        for (DynamicSchemaWithRole schema: withRoles) {
+        for (DynamicSchemaWithRole schema: schemas) {
             if (roles.contains(schema.getRole())) {
                 return false;
             }

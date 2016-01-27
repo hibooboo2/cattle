@@ -21,5 +21,5 @@ public interface DynamicSchemaDao {
 
     void removeRoles(DynamicSchema dynamicSchema);
 
-    boolean isUnique(String name, List<String> roles);
+    boolean isUnique(String name, List<String> roles, Long accountId);
 }

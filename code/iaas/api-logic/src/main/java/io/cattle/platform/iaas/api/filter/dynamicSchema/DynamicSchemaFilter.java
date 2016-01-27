@@ -1,5 +1,7 @@
 package io.cattle.platform.iaas.api.filter.dynamicSchema;
 
+import static io.cattle.platform.object.meta.ObjectMetaDataManager.ACCOUNT_FIELD;
+
 import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.model.DynamicSchema;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -14,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 
-public class DynamicSchemaRoleFilter extends AbstractResourceManagerFilter {
+public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
 
     private static final String DEFINITION_FIELD = "definition";
 
@@ -28,9 +30,16 @@ public class DynamicSchemaRoleFilter extends AbstractResourceManagerFilter {
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Map<String, Object> requestObject = (Map<String, Object>) request.getRequestObject();
-        if (!dynamicSchemaDao.isUnique(String.valueOf(requestObject.get("name")),
-                (List<String>) requestObject.get("roles"))) {
-            throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, "SchemaExistsForGivenRole");
+        if (requestObject.get(ACCOUNT_FIELD) == null) {
+            requestObject.put(ACCOUNT_FIELD, null);
+        }
+        Long accountId = requestObject.get(ACCOUNT_FIELD) == null ? null : Long.valueOf(String.valueOf(requestObject.get(ACCOUNT_FIELD)));
+        List<String> roles = (List<String>) requestObject.get("roles");
+        if ((roles == null || roles.isEmpty()) && accountId == null) {
+            throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "MustSpecifyAccountIdOrRole");
+        }
+        if (!dynamicSchemaDao.isUnique(String.valueOf(requestObject.get("name")), roles, accountId)) {
+            throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, "SchemaExistsForGivenRoleAndOrId");
         }
 
         try {
