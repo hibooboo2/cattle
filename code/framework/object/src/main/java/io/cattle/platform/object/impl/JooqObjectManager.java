@@ -107,12 +107,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @Override
     public <T> T setFields(final Object obj, final Map<String, Object> values) {
-        return Idempotent.change(new IdempotentExecution<T>() {
-            @Override
-            public T execute() {
-                return setFieldsInternal(obj, values);
-            }
-        });
+        return setFields(null, obj, values);
     }
 
     @Override
@@ -123,11 +118,6 @@ public class JooqObjectManager extends AbstractObjectManager {
                 return setFieldsInternal(schema, obj, values);
             }
         });
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <T> T setFieldsInternal(final Object obj, final Map<String, Object> values) {
-       return setFieldsInternal(null, obj, values);
     }
 
     @SuppressWarnings("unchecked")
