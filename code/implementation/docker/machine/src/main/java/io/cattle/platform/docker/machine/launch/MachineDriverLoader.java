@@ -83,7 +83,7 @@ public class MachineDriverLoader implements InitializationTask {
                 }
                 
                 List<MachineDriver> driverList = objectManager.find(MachineDriver.class, MACHINE_DRIVER.REMOVED, (Object)null);
-                Map<String, MachineDriver> existingDrivers = new HashMap<String, MachineDriver>();
+                Map<String, MachineDriver> existingDrivers = new HashMap<>();
                 for (MachineDriver d : driverList) {
                     existingDrivers.put(d.getName(), d);
                 }
