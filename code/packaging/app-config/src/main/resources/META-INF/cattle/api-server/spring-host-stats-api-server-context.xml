@@ -18,5 +18,6 @@
     <bean class="io.cattle.platform.host.stats.api.HostStatsLinkHandler" />
     <bean class="io.cattle.platform.host.stats.api.ContainerStatsLinkHandler" />
     <bean class="io.cattle.platform.host.stats.api.ServiceContainerStatsLinkHandler" />
+    <bean class="io.cattle.platform.host.stats.api.HostStatsDashBoardGenerator" />
 
 </beans>
